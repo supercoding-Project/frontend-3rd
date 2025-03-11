@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { BsCalendar4, BsCalendarFill, BsPlus, BsPeople, BsPeopleFill, BsBoxArrowLeft } from 'react-icons/bs';
+import { AuthContext } from '../../../../context/AuthContext';
 
 const NavContainer = styled.div`
   margin: 20px 40px;
@@ -46,9 +47,14 @@ const Logout = styled.div`
 
 const Nav = () => {
   const location = useLocation(); // 현재 경로를 가져옵니다.
+  const { isAuthenticated, logout } = useContext(AuthContext);
 
   const isCalendarPage = location.pathname === '/';
   const isMemberPage = location.pathname === '/member'; //다른 페이지 선택되어있을 때 모습 확인용
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <NavContainer>
@@ -63,10 +69,12 @@ const Nav = () => {
           Member
         </NavItem>
       </ul>
-      <Logout>
-        <BsBoxArrowLeft />
-        Logout
-      </Logout>
+      {isAuthenticated ? (
+        <Logout onClick={handleLogout}>
+          <BsBoxArrowLeft />
+          Logout
+        </Logout>
+      ) : null}
     </NavContainer>
   );
 };
