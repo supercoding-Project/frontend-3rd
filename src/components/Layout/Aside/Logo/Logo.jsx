@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
 import styled from 'styled-components';
 
 const Title = styled.h1`
@@ -10,7 +12,11 @@ const Title = styled.h1`
 `;
 
 const Logo = () => {
-  return <Title>TASK MANAGER</Title>;
+  return (
+    <Link to='/'>
+      <Title>TASK MANAGER</Title>
+    </Link>
+  );
 };
 
 export default Logo;
