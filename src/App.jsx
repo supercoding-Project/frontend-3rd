@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import GlobalStyle from './styles/GlobalStyle';
 import Layout from './components/Layout/Layout';
 import Home from './pages/Home/Home';
-import AddCalendar from './pages/AddCalendar/AddCalendar';
+import ScheduleEdit from './pages/ScheduleEdit/ScheduleEdit';
 
 const App = () => {
   return (
@@ -11,7 +11,7 @@ const App = () => {
       <Routes>
         <Route path='/' element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path='/add-calendar' element={<AddCalendar />} />
+          <Route path='/schedule-edit' element={<ScheduleEdit />} />
         </Route>
       </Routes>
     </>
