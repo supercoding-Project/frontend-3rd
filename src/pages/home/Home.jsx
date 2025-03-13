@@ -65,6 +65,6 @@ const TabButton = styled.li`
     transform: translateY(-50%);
     width: 1px;
     height: 15px;
-    background-color: var(--color-text-disabled);
+    background-color: var(--color-border);
   }
 `;
