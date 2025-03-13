@@ -1,5 +1,5 @@
 const Month = () => {
-  return <div>Month</div>;
+  return <div></div>;
 };
 
 export default Month;

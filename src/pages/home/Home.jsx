@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import Tab from '../../components/Tab/Tab';
-import TabButton from '../../components/Tab/TabButton';
 import Month from '../../components/Calendar/Month';
 import Week from '../../components/Calendar/Week';
 import Day from '../../components/Calendar/Day';
+import styled from 'styled-components';
 
 const Home = () => {
   const [selected, setSelected] = useState('month');
@@ -21,14 +20,14 @@ const Home = () => {
   return (
     <>
       <Tab>
-        <TabButton selected={selected === 'month'} onClick={() => handleSelectButton('month')}>
-          Month
+        <TabButton $selected={selected === 'month'}>
+          <button onClick={() => handleSelectButton('month')}>월간</button>
         </TabButton>
-        <TabButton selected={selected === 'week'} onClick={() => handleSelectButton('week')}>
-          Week
+        <TabButton $selected={selected === 'week'}>
+          <button onClick={() => handleSelectButton('week')}>주간</button>
         </TabButton>
-        <TabButton selected={selected === 'day'} onClick={() => handleSelectButton('day')}>
-          Day
+        <TabButton $selected={selected === 'day'}>
+          <button onClick={() => handleSelectButton('day')}>일간</button>
         </TabButton>
       </Tab>
 
@@ -38,3 +37,34 @@ const Home = () => {
 };
 
 export default Home;
+
+const Tab = styled.ul`
+  display: flex;
+  align-items: end;
+  gap: 30px;
+`;
+
+const TabButton = styled.li`
+  position: relative;
+
+  & button {
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    font-size: var(--font-md);
+    color: ${({ $selected }) => ($selected ? 'var(--color-main-active)' : 'var(--color-main-inactive)')};
+    padding: 0;
+    cursor: pointer;
+  }
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 15px;
+    background-color: var(--color-text-disabled);
+  }
+`;
