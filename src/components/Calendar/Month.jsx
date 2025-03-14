@@ -41,7 +41,7 @@ const Month = () => {
   return (
     <Container>
       <DateContainer>
-        <div>{format(currentDate, 'yyyy. MM')}</div>
+        <div>{format(currentDate, 'yyyy. MM.')}</div>
         <div>
           <button type='button' onClick={() => handleChangeMonth('prev')}>
             <BsChevronLeft />
