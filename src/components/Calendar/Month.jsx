@@ -118,7 +118,6 @@ const WeekContainer = styled.div`
 const DayContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  border-top: 1px solid var(--color-border);
   border-left: 1px solid var(--color-border);
   flex-grow: 1;
 `;
