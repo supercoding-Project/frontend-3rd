@@ -1,44 +1,36 @@
 import {
-  addMonths,
-  addYears,
   eachDayOfInterval,
   endOfMonth,
-  endOfWeek,
-  format,
-  isSameDay,
-  isSameMonth,
   startOfMonth,
   startOfWeek,
+  format,
+  endOfWeek,
+  isSameMonth,
+  isSameDay,
   subMonths,
-  subYears,
+  addMonths,
 } from 'date-fns';
 import { useState } from 'react';
-import { BsCaretLeftFill } from 'react-icons/bs';
-import { BsCaretRightFill } from 'react-icons/bs';
-import { BsFillFastForwardFill } from 'react-icons/bs';
+import { BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const Month = () => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const navigate = useNavigate();
 
-  const startDate = startOfWeek(startOfMonth(currentMonth));
-  const endDate = endOfWeek(endOfMonth(currentMonth));
+  const startDate = startOfWeek(startOfMonth(currentDate));
+  const endDate = endOfWeek(endOfMonth(currentDate));
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   const weeks = ['일', '월', '화', '수', '목', '금', '토'];
 
-  const handleChangeDate = (selectedButton) => {
-    if (selectedButton === 'prevMonth') {
-      setCurrentMonth(subMonths(currentMonth, 1));
-    } else if (selectedButton === 'nextMonth') {
-      setCurrentMonth(addMonths(currentMonth, 1));
-    } else if (selectedButton === 'prevYear') {
-      setCurrentMonth(subYears(currentMonth, 1));
-    } else if (selectedButton === 'nextYear') {
-      setCurrentMonth(addYears(currentMonth, 1));
+  const handleChangeMonth = (selectedButton) => {
+    if (selectedButton === 'prev') {
+      setCurrentDate(subMonths(currentDate, 1));
+    } else {
+      setCurrentDate(addMonths(currentDate, 1));
     }
   };
 
@@ -48,41 +40,36 @@ const Month = () => {
 
   return (
     <Container>
-      <DateWrapper>
-        <button onClick={() => handleChangeDate('prevYear')}>
-          <BsFillFastForwardFill />
-        </button>
-        <button onClick={() => handleChangeDate('prevMonth')}>
-          <BsCaretLeftFill />
-        </button>
+      <DateContainer>
         <div>
-          <span>{format(currentMonth, 'yyyy')}년</span>
-          <span>{format(currentMonth, 'MM')}월</span>
+          {format(currentDate, 'yyyy')}. {format(currentDate, 'MM')}.
         </div>
-        <button onClick={() => handleChangeDate('nextMonth')}>
-          <BsCaretRightFill />
-        </button>
-        <button onClick={() => handleChangeDate('nextYear')}>
-          <BsFillFastForwardFill />
-        </button>
-      </DateWrapper>
-      <WeeksWrapper>
+        <div>
+          <button type='button' onClick={() => handleChangeMonth('prev')}>
+            <BsChevronLeft />
+          </button>
+          <button type='button' onClick={() => handleChangeMonth('next')}>
+            <BsChevronRight />
+          </button>
+        </div>
+      </DateContainer>
+      <WeekContainer>
         {weeks.map((week) => (
           <div key={week}>{week}</div>
         ))}
-      </WeeksWrapper>
-      <DaysWrapper>
+      </WeekContainer>
+      <DayContainer>
         {days.map((day) => (
           <Day
             key={day}
-            $isToday={isSameDay(day, new Date())}
-            $isCurrentMonth={isSameMonth(day, currentMonth)}
+            $isCurrentDay={isSameDay(day, new Date())}
+            $isCurrentMonth={isSameMonth(day, currentDate)}
             onClick={handleScheduleEdit}
           >
             <span>{format(day, 'd')}</span>
           </Day>
         ))}
-      </DaysWrapper>
+      </DayContainer>
     </Container>
   );
 };
@@ -90,85 +77,64 @@ const Month = () => {
 export default Month;
 
 const Container = styled.div`
-  height: calc(100% - 88.5px);
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 20.5px);
 `;
 
-const DateWrapper = styled.div`
+const DateContainer = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
-
-  & div {
-    width: 120px;
-    display: flex;
-    align-items: center;
-    font-size: var(--font-lg);
-    font-weight: 400;
-    justify-content: center;
-    gap: 8px;
-  }
+  align-items: end;
+  justify-content: space-between;
+  height: 6%;
+  padding-bottom: 10px;
 
   & button {
-    width: 30px;
-    height: 30px;
-    border: none;
-    background: transparent;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    font-size: var(--font-lg);
-    color: var(--color-main-inactive);
+    padding: 5px 10px;
+    border: none;
+    background: transparent;
     cursor: pointer;
   }
 
-  & button:first-child,
-  button:last-child {
-    font-size: var(--font-xl);
-  }
-
-  & button:first-child {
-    transform: rotateY(180deg);
-  }
-
-  & button:hover {
-    color: var(--color-main-active);
+  & svg {
+    width: 16px;
+    height: 16px;
   }
 `;
 
-const WeeksWrapper = styled.div`
+const WeekContainer = styled.div`
   display: flex;
+  background: var(--color-border);
 
   & div {
-    flex-grow: 1;
-    background: var(--color-border);
-    font-weight: 400;
+    width: 100%;
     padding: 5px;
+    font-size: var(--font-md);
+    font-weight: 400;
   }
 `;
 
-const DaysWrapper = styled.div`
+const DayContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  height: 100%;
-  flex-grow: 1;
   border-top: 1px solid var(--color-border);
   border-left: 1px solid var(--color-border);
-  cursor: pointer;
+  flex-grow: 1;
 `;
 
 const Day = styled.div`
   width: calc(100% / 7);
-  flex-grow: 1;
   border-right: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  background: ${({ $isToday }) => ($isToday ? 'rgba(106, 121, 248, 0.1)' : 'transparent')};
-  padding: 5px;
+  background: ${({ $isCurrentDay }) => ($isCurrentDay ? 'rgba(106, 121, 248, 0.1)' : 'transparent')};
+  cursor: pointer;
 
   & span {
     font-size: var(--font-sm);
+    padding-left: 5px;
     color: ${({ $isCurrentMonth }) => ($isCurrentMonth ? 'var(--color-text-primary)' : 'var(--color-text-disabled)')};
   }
 `;
