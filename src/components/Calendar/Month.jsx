@@ -30,43 +30,39 @@ const Month = () => {
 
   const weeks = ['일', '월', '화', '수', '목', '금', '토'];
 
-  const handlePrevMonth = () => {
-    setCurrentMonth(subMonths(currentMonth, 1));
+  const handleChangeDate = (selectedButton) => {
+    if (selectedButton === 'prevMonth') {
+      setCurrentMonth(subMonths(currentMonth, 1));
+    } else if (selectedButton === 'nextMonth') {
+      setCurrentMonth(addMonths(currentMonth, 1));
+    } else if (selectedButton === 'prevYear') {
+      setCurrentMonth(subYears(currentMonth, 1));
+    } else if (selectedButton === 'nextYear') {
+      setCurrentMonth(addYears(currentMonth, 1));
+    }
   };
 
-  const handlePrevYear = () => {
-    setCurrentMonth(subYears(currentMonth, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(addMonths(currentMonth, 1));
-  };
-
-  const handleNextYear = () => {
-    setCurrentMonth(addYears(currentMonth, 1));
-  };
-
-  const handlePageNavigation = () => {
+  const handleScheduleEdit = () => {
     navigate('/schedule-edit');
   };
 
   return (
     <Container>
       <DateWrapper>
-        <button onClick={handlePrevYear}>
+        <button onClick={() => handleChangeDate('prevYear')}>
           <BsFillFastForwardFill />
         </button>
-        <button onClick={handlePrevMonth}>
+        <button onClick={() => handleChangeDate('prevMonth')}>
           <BsCaretLeftFill />
         </button>
         <div>
           <span>{format(currentMonth, 'yyyy')}년</span>
           <span>{format(currentMonth, 'MM')}월</span>
         </div>
-        <button onClick={handleNextMonth}>
+        <button onClick={() => handleChangeDate('nextMonth')}>
           <BsCaretRightFill />
         </button>
-        <button onClick={handleNextYear}>
+        <button onClick={() => handleChangeDate('nextYear')}>
           <BsFillFastForwardFill />
         </button>
       </DateWrapper>
@@ -81,7 +77,7 @@ const Month = () => {
             key={day}
             $isToday={isSameDay(day, new Date())}
             $isCurrentMonth={isSameMonth(day, currentMonth)}
-            onClick={handlePageNavigation}
+            onClick={handleScheduleEdit}
           >
             <span>{format(day, 'd')}</span>
           </Day>
