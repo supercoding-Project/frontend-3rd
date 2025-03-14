@@ -133,7 +133,7 @@ const DateWrapper = styled.div`
     transform: rotateY(180deg);
   }
 
-  & button:active {
+  & button:hover {
     color: var(--color-main-active);
   }
 `;
