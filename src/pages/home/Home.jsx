@@ -40,7 +40,6 @@ export default Home;
 
 const Tab = styled.ul`
   display: flex;
-  align-items: end;
   gap: 30px;
 `;
 
