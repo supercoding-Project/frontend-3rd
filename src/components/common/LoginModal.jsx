@@ -4,6 +4,7 @@ import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { FcGoogle } from 'react-icons/fc';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { AuthContext } from '../../context/AuthContext';
+import { useForm } from 'react-hook-form';
 
 const Overlay = styled.div`
   position: fixed;
@@ -156,8 +157,18 @@ const KakaoLoginIcon = styled(RiKakaoTalkFill)`
   padding: 5px;
 `;
 
+const ErrorMsg = styled.small`
+  font-size: 12px;
+  margin-top: 10px;
+`;
+
 const LoginModal = ({ setOpenLoginModal }) => {
   const { login } = useContext(AuthContext);
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, isSubmitted, errors },
+  } = useForm();
   const [pwCheck, setPwCheck] = useState({
     type: 'password',
     value: false,
@@ -192,9 +203,9 @@ const LoginModal = ({ setOpenLoginModal }) => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const userData = { email: enteredEmail, password: enteredPassword };
+  const onSubmit = async (data) => {
+    await new Promise((r) => setTimeout(r, 1000));
+    const userData = { email: data.email, password: data.password };
     login(userData); // login 함수 호출, 가짜 JWT 토큰 사용
     setOpenLoginModal(false);
   };
@@ -202,17 +213,45 @@ const LoginModal = ({ setOpenLoginModal }) => {
     <Overlay onClick={handleCloseModal}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <LoginContainer>Log In</LoginContainer>
-        <LoginForm onSubmit={handleSubmit}>
+        <LoginForm onSubmit={handleSubmit(onSubmit)}>
           <EmailDiv>
-            {/* <Label htmlFor='email'>Email</Label> */}
-            <Input type='text' onChange={handleEmailInput} placeholder='Email' />
+            <Input
+              type='text'
+              id='email'
+              onChange={handleEmailInput}
+              placeholder='Email'
+              aria-invalid={isSubmitted ? (errors.email ? 'true' : 'false') : undefined}
+              {...register('email', {
+                required: '🚨이메일은 필수 입력입니다.',
+                pattern: {
+                  value: /\S+@\S+\.\S+/,
+                  message: '🚨이메일 형식에 맞지 않습니다.',
+                },
+              })}
+            />
+            {errors.email && <ErrorMsg role='alert'>{errors.email.message}</ErrorMsg>}
           </EmailDiv>
           <PasswordDiv>
-            {/* <Label htmlFor='password'>Password</Label> */}
-            <Input type={pwCheck.type} onChange={handlePasswordInput} placeholder='Password' />
+            <Input
+              id='password'
+              type={pwCheck.type}
+              onChange={handlePasswordInput}
+              placeholder='Password'
+              aria-invalid={isSubmitted ? (errors.password ? 'true' : 'false') : undefined}
+              {...register('password', {
+                required: '🚨비밀번호는 필수 입력입니다.',
+                minLength: {
+                  value: 8,
+                  message: '🚨8자리 이상 비밀번호를 입력하세요. ',
+                },
+              })}
+            />
+            {errors.password && <ErrorMsg role='alert'>{errors.password.message}</ErrorMsg>}
             {!pwCheck.value ? <Eye onClick={handlePwCheck} /> : <CloseEye onClick={handlePwCheck} />}
           </PasswordDiv>
-          <SubmitBtn type='submit'>Log In</SubmitBtn>
+          <SubmitBtn type='submit' disabled={isSubmitting}>
+            Log In
+          </SubmitBtn>
         </LoginForm>
         <Separator> 또는</Separator>
         <SocialLoginContainer>

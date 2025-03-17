@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BsCalendar4, BsCalendarFill, BsPlus, BsPeople, BsPeopleFill, BsBoxArrowLeft } from 'react-icons/bs';
 import { AuthContext } from '../../../../context/AuthContext';
 
@@ -46,7 +46,8 @@ const Logout = styled.div`
 `;
 
 const Nav = () => {
-  const location = useLocation(); // 현재 경로를 가져옵니다.
+  const location = useLocation();
+  const navigate = useNavigate(); // 현재 경로를 가져옵니다.
   const { isAuthenticated, logout } = useContext(AuthContext);
 
   const isCalendarPage = location.pathname === '/';
@@ -54,6 +55,7 @@ const Nav = () => {
 
   const handleLogout = () => {
     logout();
+    navigate('/');
   };
 
   return (
