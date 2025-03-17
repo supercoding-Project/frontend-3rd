@@ -193,6 +193,7 @@ const DateInput = styled.div`
     height: 30px;
     border: 1px solid var(--color-border);
     padding: 0px 8px;
+    outline: none;
   }
 
   & input[type='time'] {
