@@ -19,25 +19,31 @@ const GlobalStyle = createGlobalStyle`
 --color-bg-hover: #F1F1F1;
 
 --color-main-active: #6A79F8; 
+--color-main-active-light: #6A79F810; 
 --color-main-inactive: #999999; 
 --color-badge: #FF647C;
 
---color-calendar-group-1: #FF5733;
---color-calendar-group-2: #FFC300;
---color-calendar-group-3: #36D1DC;
---color-calendar-group-4: #C70039;
---color-calendar-group-5: #900C3F;
---color-calendar-group-6: #581845;
---color-calendar-group-7: #DAF7A6;
---color-calendar-group-8: #FF33F6;
---color-calendar-group-9: #3382FF;
---color-calendar-group-10: #6AFF33;
+--color-calendar-1: #E36B15;
+--color-calendar-1-light: #E36B1520;
+--color-calendar-2: #F5A623;
+--color-calendar-2-light: #F5A62320;
+--color-calendar-3: #17A589;
+--color-calendar-3-light: #17A58920;
+--color-calendar-4: #145A32;
+--color-calendar-4-light: #145A3220;
+--color-calendar-5: #1F7A8C;
+--color-calendar-5-light: #1F7A8C20;
+--color-calendar-6: #3B5998;
+--color-calendar-6-light: #3B599820;
+--color-calendar-7: #AE81FF;
+--color-calendar-7-light: #AE81FF20;
+--color-calendar-8: #7D3C98;
+--color-calendar-8-light: #7D3C9820;
+--color-calendar-9: #5D6D7E;
+--color-calendar-9-light: #5D6D7E20;
+--color-calendar-10: #6E2C00;
+--color-calendar-10-light: #6E2C0020;
 
---color-todo-1: #A6E22E;
---color-todo-2: #66D9EF;
---color-todo-3: #F92672;
---color-todo-4: #FD971F;
---color-todo-5: #AE81FF;
   }
 
 
