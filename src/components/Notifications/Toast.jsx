@@ -15,7 +15,8 @@ const scheduledEvents = [
     repeat: false,
     location: '카페 베네',
     members: ['U1', 'U3'],
-    forceShow: true,
+    // forceShow: true,
+    forceShow: false,
   },
 ];
 

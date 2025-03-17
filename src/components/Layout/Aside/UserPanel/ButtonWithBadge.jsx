@@ -29,9 +29,9 @@ const Badge = styled.div`
   align-items: center;
 `;
 
-const ButtonWithBadge = ({ $icon, $badgeCount }) => {
+const ButtonWithBadge = ({ $icon, $badgeCount, onClick }) => {
   return (
-    <ButtonContainer>
+    <ButtonContainer onClick={onClick}>
       {$icon}
       {$badgeCount > 0 && <Badge>{$badgeCount}</Badge>} {/* 배지가 있을 때만 표시 */}
     </ButtonContainer>
