@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import ChatListRow from './ChatListRow';
+import ChatTest from './ChatTest';
 
 const ChatListContainer = styled.div`
   overflow: auto;
@@ -37,6 +38,7 @@ const ChatList = () => {
         chatTime='14 : 22'
         newChatCount='7'
       />
+      <ChatTest />
     </ChatListContainer>
   );
 };
