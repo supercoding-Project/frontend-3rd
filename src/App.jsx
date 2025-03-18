@@ -7,6 +7,7 @@ import MyPage from './pages/myPage/MyPage';
 import Notifications from './components/Notifications/Notifications';
 import Toast from './components/Notifications/Toast';
 import ChatList from './components/Chat/ChatList';
+import ScheduleEdit from './pages/ScheduleEdit/ScheduleEdit';
 
 const App = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path='/myPage' element={<MyPage />} />
           <Route path='/notifications' element={<Notifications />} />
+          <Route path='/schedule-edit' element={<ScheduleEdit />} />
         </Route>
         <Route path='/chat-list' element={<ChatList />} />
       </Routes>
