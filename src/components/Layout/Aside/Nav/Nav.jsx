@@ -1,11 +1,31 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionItemHeading,
+  AccordionItemButton,
+  AccordionItemPanel,
+} from 'react-accessible-accordion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { BsCalendar4, BsCalendarFill, BsPlus, BsPeople, BsPeopleFill, BsBoxArrowLeft } from 'react-icons/bs';
+import {
+  BsCalendar4,
+  BsCalendarFill,
+  BsPlus,
+  BsPeople,
+  BsPeopleFill,
+  BsBoxArrowLeft,
+  BsChevronDown,
+  BsChevronUp,
+} from 'react-icons/bs';
 import { AuthContext } from '../../../../context/AuthContext';
+import CalendarListForMemberList from './Members/CalendarListForMemberList';
 
 const NavContainer = styled.div`
+  flex: 1; /* 📌 남은 공간을 모두 차지하도록 설정 */
   margin: 20px 40px;
+  //overflow-y: auto; /* 📌 내부 스크롤 추가 */
+  padding-bottom: 20px; /* 스크롤 시 로그아웃 버튼과 겹치지 않도록 여백 추가 */
 `;
 
 const NavItem = styled.li`
@@ -38,6 +58,7 @@ const Logout = styled.div`
   position: absolute;
   bottom: 20px;
   left: 40px;
+  margin-top: auto;
   cursor: pointer;
   svg {
     margin-right: 15px;
@@ -49,27 +70,68 @@ const Nav = () => {
   const location = useLocation();
   const navigate = useNavigate(); // 현재 경로를 가져옵니다.
   const { isAuthenticated, logout } = useContext(AuthContext);
+  const [isToggleOpen, setIsToggleOpen] = useState(false);
 
   const isCalendarPage = location.pathname === '/';
-  const isMemberPage = location.pathname === '/member'; //다른 페이지 선택되어있을 때 모습 확인용
+  const isMemberPage = location.pathname === '/members'; //다른 페이지 선택되어있을 때 모습 확인용
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const handleToggle = () => {
+    setIsToggleOpen(!isToggleOpen);
+  };
+
+  const handleNavigateToCalendar = () => {
+    navigate('/');
+  };
+
+  const handleNavigateToMembers = () => {
+    navigate('/members');
+  };
+
   return (
     <NavContainer>
       <ul>
-        <NavItem $active={isCalendarPage}>
+        <NavItem $active={isCalendarPage} onClick={handleNavigateToCalendar}>
           {isCalendarPage ? <BsCalendarFill /> : <BsCalendar4 />}
           Calendar
           <BsPlus className='plus-icon' />
         </NavItem>
-        <NavItem $active={isMemberPage}>
+        {/* <NavItem $active={isMemberPage} onClick={handleNavigateToMembers}>
           {isMemberPage ? <BsPeopleFill /> : <BsPeople />}
           Member
-        </NavItem>
+          {isToggleOpen ? (
+            <BsChevronUp className='plus-icon' onClick={handleToggle} />
+          ) : (
+            <BsChevronDown className='plus-icon' onClick={handleToggle} />
+          )}
+          {isToggleOpen && <MemberList />}
+        </NavItem> */}
+        <Accordion>
+          <AccordionItem>
+            <AccordionItemHeading>
+              <AccordionItemButton>
+                <NavItem $active={isMemberPage} onClick={handleNavigateToMembers}>
+                  <BsPeople />
+                  Member
+                  {isToggleOpen ? (
+                    <BsChevronUp className='plus-icon' onClick={handleToggle} />
+                  ) : (
+                    <BsChevronDown className='plus-icon' onClick={handleToggle} />
+                  )}
+                </NavItem>
+              </AccordionItemButton>
+            </AccordionItemHeading>
+            {isToggleOpen && (
+              <AccordionItemPanel>
+                <CalendarListForMemberList />
+              </AccordionItemPanel>
+            )}
+          </AccordionItem>
+        </Accordion>
       </ul>
       {isAuthenticated ? (
         <Logout onClick={handleLogout}>

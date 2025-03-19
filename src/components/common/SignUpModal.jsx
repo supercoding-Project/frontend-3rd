@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { data } from 'react-router-dom';
 
 const DEFAULT_PROFILE_IMAGE = '/Basic-User-Img.png';
 
@@ -51,7 +53,16 @@ const EmailContentDiv = styled.div`
   justify-content: center;
   align-items: flex-start;
   position: relative;
-  margin-left: 80px;
+  margin-left: 95px;
+  gap: 10px;
+`;
+
+const EmailInputWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 `;
 
 const DupCheckBtn = styled.button`
@@ -183,6 +194,8 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
   const [profileImage, setProfileImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(DEFAULT_PROFILE_IMAGE);
+  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [emailError, setEmailError] = useState(null);
 
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
@@ -210,13 +223,57 @@ const SignUpModal = ({ setOpenSignupModal }) => {
   const handleConfirmPwCheck = () => {
     setConfirmPwCheck(() => {
       if (!confirmPwCheck.value) {
-        return { type: Text, value: true };
+        return { type: 'text', value: true };
       }
       return {
         type: 'password',
         value: false,
       };
     });
+  };
+
+  const handleDuplicateCheck = async (email) => {
+    try {
+      const res = await axios.post('email중복체크API', { email });
+      if (res.data.available) {
+        setIsEmailChecked(true);
+        setEmailError(null);
+        alert('사용 가능한 이메일입니다.');
+      } else {
+        setEmailError('🚨이미 사용 중인 이메일입니다.');
+        setIsEmailChecked(false);
+      }
+    } catch (error) {
+      console.error(error);
+      setEmailError('🚨이메일 중복 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const onSubmit = async (data) => {
+    if (!isEmailChecked) {
+      alert('🚨 이메일 중복 확인을 해주세요');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    if (profileImage) {
+      formData.append('profileImage', profileImage);
+    }
+    try {
+      await axios.post('/api/signup', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      alert('회원가입이 완료되었습니다.');
+      setOpenSignupModal(false);
+    } catch (error) {
+      console.error(error);
+      alert('🚨회원가입 중 오류가 발생했습니다. 다시 시도하여 주십시오.');
+    }
   };
 
   const [pwCheck, setPwCheck] = useState({
@@ -233,12 +290,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
     <Overlay onClick={handleCloseModal}>
       <ModalContainer>
         <SignupContainer>Sign Up</SignupContainer>
-        <LoginForm
-          onSubmit={handleSubmit(async (data) => {
-            await new Promise((r) => setTimeout(r, 1000));
-            alert(JSON.stringify(data));
-          })}
-        >
+        <LoginForm onSubmit={handleSubmit(onSubmit)}>
           {/* ✅ 프로필 이미지 업로드 */}
           <ProfileImageContainer>
             <ProfileImage src={previewImage} alt='Profile Preview' />
@@ -264,20 +316,22 @@ const SignUpModal = ({ setOpenSignupModal }) => {
             {errors.name && <ErrorMsg role='alert'>{errors.name.message}</ErrorMsg>}
           </ContentDiv>
           <EmailContentDiv>
-            <Input
-              id='email'
-              type='text'
-              placeholder='Email을 입력하세요.'
-              aria-invalid={isSubmitted ? (errors.email ? 'true' : 'false') : undefined}
-              {...register('email', {
-                required: '🚨Email은 필수 입력입니다.',
-                pattern: {
-                  value: /\S+@\S+\.\S+/,
-                  message: '🚨Email 형식에 맞지 않습니다.',
-                },
-              })}
-            />
-            <DupCheckBtn>중복 확인</DupCheckBtn>
+            <EmailInputWrapper>
+              <Input
+                id='email'
+                type='text'
+                placeholder='Email을 입력하세요.'
+                aria-invalid={isSubmitted ? (errors.email ? 'true' : 'false') : undefined}
+                {...register('email', {
+                  required: '🚨Email은 필수 입력입니다.',
+                  pattern: {
+                    value: /\S+@\S+\.\S+/,
+                    message: '🚨Email 형식에 맞지 않습니다.',
+                  },
+                })}
+              />
+              <DupCheckBtn onClick={() => handleDuplicateCheck(watch('email'))}>중복 확인</DupCheckBtn>
+            </EmailInputWrapper>
             {errors.email && <ErrorMsg role='alert'>{errors.email.message}</ErrorMsg>}
           </EmailContentDiv>
           <ContentDiv>
