@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { data } from 'react-router-dom';
 
 const DEFAULT_PROFILE_IMAGE = '/Basic-User-Img.png';
 
@@ -51,7 +53,16 @@ const EmailContentDiv = styled.div`
   justify-content: center;
   align-items: flex-start;
   position: relative;
-  margin-left: 80px;
+  margin-left: 95px;
+  gap: 10px;
+`;
+
+const EmailInputWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 `;
 
 const DupCheckBtn = styled.button`
@@ -183,6 +194,8 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
   const [profileImage, setProfileImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(DEFAULT_PROFILE_IMAGE);
+  const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const [emailError, setEmailError] = useState(null);
 
   const handleCloseModal = (e) => {
     if (e.target === e.currentTarget) {
@@ -193,8 +206,17 @@ const SignUpModal = ({ setOpenSignupModal }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfileImage(file);
-      setPreviewImage(URL.createObjectURL(file)); // 미리보기 설정
+      console.log('선택된 파일:', file);
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        console.log('변환된 이미지 URL:', reader.result);
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -210,13 +232,108 @@ const SignUpModal = ({ setOpenSignupModal }) => {
   const handleConfirmPwCheck = () => {
     setConfirmPwCheck(() => {
       if (!confirmPwCheck.value) {
-        return { type: Text, value: true };
+        return { type: 'text', value: true };
       }
       return {
         type: 'password',
         value: false,
       };
     });
+  };
+
+  const handleDuplicateCheck = async (email) => {
+    try {
+      const res = await axios.post(
+        'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/check-email',
+        { email }
+      );
+      // if (res.data.isSuccess) {
+      //   setIsEmailChecked(true);
+      //   setEmailError(null);
+      //   console.log(res.data);
+      //   alert('✅ ' + res.data.data);
+      // } else {
+      //   setEmailError('🚨이미 사용 중인 이메일입니다.');
+      //   setIsEmailChecked(false);
+      // }
+      if (res.data.data === '사용 가능한 이메일입니다.') {
+        console.log('성공');
+        setIsEmailChecked(true);
+        setEmailError(null);
+        console.log(res.data);
+        alert('✅ ' + res.data.data);
+      } else {
+        console.log('실패');
+        console.log(res.data);
+        alert('🚨' + res.data.data);
+        setIsEmailChecked(false);
+      }
+    } catch (error) {
+      console.error(error);
+      setEmailError('🚨이메일 중복 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const onSubmit = async (data) => {
+    if (!isEmailChecked) {
+      alert('🚨 이메일 중복 확인을 해주세요');
+      return;
+    }
+
+    console.log(data);
+    const formData = new FormData();
+    // formData.append('name', data.name);
+    // formData.append('email', data.email);
+    // formData.append('password', data.password);
+    const dto = {
+      email: data.email,
+      password: data.password,
+      username: data.name,
+      phone: data.phoneNumber,
+    };
+
+    formData.append('dto', JSON.stringify(dto));
+    if (profileImage) {
+      formData.append('image', profileImage);
+    } else {
+      const response = await fetch(DEFAULT_PROFILE_IMAGE);
+      const blob = await response.blob();
+      formData.append('image', blob, 'default-profile.png');
+    }
+
+    console.log('formdata내용');
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+    console.log('🚀 JSON.stringify(dto):', JSON.stringify(dto));
+    console.log('🚀 Blob 내용:', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+    console.log('🚀 Profile Image:', profileImage);
+    console.log('🚀 Default Profile Image:', DEFAULT_PROFILE_IMAGE);
+    // formData.append('data', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+    // if (!profileImage) {
+    //   const response = await fetch(DEFAULT_PROFILE_IMAGE); // 기본 이미지 URL에서 파일 가져오기
+    //   const blob = await response.blob();
+    //   formData.append('profileImage', blob, 'default-profile.png'); // Blob 추가
+    // } else {
+    //   formData.append('profileImage', profileImage);
+    // }
+    // if (profileImage) {
+    //   formData.append('profileImage', profileImage);
+    // } else {
+    //   formData.append('profileImage', DEFAULT_PROFILE_IMAGE);
+    // }
+    try {
+      await axios.post('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/signup', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      alert('회원가입이 완료되었습니다.');
+      setOpenSignupModal(false);
+    } catch (error) {
+      console.error(error);
+      alert('🚨회원가입 중 오류가 발생했습니다. 다시 시도하여 주십시오.');
+    }
   };
 
   const [pwCheck, setPwCheck] = useState({
@@ -229,27 +346,20 @@ const SignUpModal = ({ setOpenSignupModal }) => {
     value: false,
   });
 
+  useEffect(() => {
+    console.log('🔍 업데이트된 미리보기 이미지:', previewImage);
+  }, [previewImage]);
+
   return (
     <Overlay onClick={handleCloseModal}>
       <ModalContainer>
         <SignupContainer>Sign Up</SignupContainer>
-        <LoginForm
-          onSubmit={handleSubmit(async (data) => {
-            await new Promise((r) => setTimeout(r, 1000));
-            alert(JSON.stringify(data));
-          })}
-        >
+        <LoginForm onSubmit={handleSubmit(onSubmit)}>
           {/* ✅ 프로필 이미지 업로드 */}
           <ProfileImageContainer>
-            <ProfileImage src={previewImage} alt='Profile Preview' />
+            <ProfileImage src={previewImage || '/Basic-User-Img.png'} alt='Profile Preview' />
             <ImageUploadLabel htmlFor='profileUpload'>이미지 업로드</ImageUploadLabel>
-            <input
-              id='profileUpload'
-              type='file'
-              accept='image/*'
-              style={{ display: 'none' }}
-              onChange={handleImageChange}
-            />
+            <input id='profileUpload' type='file' style={{ display: 'none' }} onChange={handleImageChange} />
           </ProfileImageContainer>
           <ContentDiv>
             <Input
@@ -263,21 +373,47 @@ const SignUpModal = ({ setOpenSignupModal }) => {
             />
             {errors.name && <ErrorMsg role='alert'>{errors.name.message}</ErrorMsg>}
           </ContentDiv>
-          <EmailContentDiv>
+          <ContentDiv>
             <Input
-              id='email'
+              id='phoneNumber'
               type='text'
-              placeholder='Email을 입력하세요.'
-              aria-invalid={isSubmitted ? (errors.email ? 'true' : 'false') : undefined}
-              {...register('email', {
-                required: '🚨Email은 필수 입력입니다.',
+              placeholder='ex) 010-1234-5678'
+              aria-invalid={isSubmitted ? (errors.phoneNumber ? 'true' : 'false') : undefined}
+              {...register('phoneNumber', {
+                required: '🚨핸드폰번호는 필수 입력입니다.',
                 pattern: {
-                  value: /\S+@\S+\.\S+/,
-                  message: '🚨Email 형식에 맞지 않습니다.',
+                  value: /^01([0|1|6|7|8|9]?)-?([0-9]{3,4})-?([0-9]{4})$/,
+                  message: '🚨 010-1234-5678 형식으로 입력해주세요.',
+                },
+                minLength: {
+                  value: 13,
+                  message: '🚨핸드폰 번호가 정확하지 않습니다. ',
+                },
+                maxLength: {
+                  value: 13,
+                  message: '🚨핸드폰 번호가 정확하지 않습니다. ',
                 },
               })}
             />
-            <DupCheckBtn>중복 확인</DupCheckBtn>
+            {errors.phoneNumber && <ErrorMsg role='alert'>{errors.phoneNumber.message}</ErrorMsg>}
+          </ContentDiv>
+          <EmailContentDiv>
+            <EmailInputWrapper>
+              <Input
+                id='email'
+                type='text'
+                placeholder='Email을 입력하세요.'
+                aria-invalid={isSubmitted ? (errors.email ? 'true' : 'false') : undefined}
+                {...register('email', {
+                  required: '🚨Email은 필수 입력입니다.',
+                  pattern: {
+                    value: /\S+@\S+\.\S+/,
+                    message: '🚨Email 형식에 맞지 않습니다.',
+                  },
+                })}
+              />
+              <DupCheckBtn onClick={() => handleDuplicateCheck(watch('email'))}>중복 확인</DupCheckBtn>
+            </EmailInputWrapper>
             {errors.email && <ErrorMsg role='alert'>{errors.email.message}</ErrorMsg>}
           </EmailContentDiv>
           <ContentDiv>

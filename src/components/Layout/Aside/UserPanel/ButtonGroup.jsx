@@ -21,9 +21,6 @@ const ButtonGroup = () => {
   return (
     <ButtonGroupContainer>
       <ButtonWithBadge $icon={<BsGearFill />} onClick={() => navigate('/myPage')} />
-      <ButtonWithBadge $icon={<BsChatRightDotsFill />} $badgeCount={2} />
-      <ButtonWithBadge $icon={<BsBellFill />} $badgeCount={5} />
-      <ButtonWithBadge $icon={<BsGearFill />} />
       <ButtonWithBadge
         $icon={<BsChatRightDotsFill />}
         $badgeCount={2}
