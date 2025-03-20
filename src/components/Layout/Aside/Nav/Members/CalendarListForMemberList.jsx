@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useCalendar } from '../../../../../context/CalendarContext';
 
 const ListContainer = styled.div`
   display: flex;
@@ -9,20 +10,13 @@ const ListContainer = styled.div`
   margin-bottom: 30px;
 `;
 
-const CheckboxLabel1 = styled.label`
+const CheckboxLabel = styled.label`
   display: flex;
   align-items: center;
   font-size: 12px;
   cursor: pointer;
-  background-color: var(--color-calendar-3);
-`;
-
-const CheckboxLabel2 = styled.label`
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-  cursor: pointer;
-  background-color: var(--color-calendar-5);
+  background-color: ${(props) => props.bgColor || 'lightgray'};
+  padding: 5px;
 `;
 
 const Checkbox = styled.input`
@@ -30,16 +24,21 @@ const Checkbox = styled.input`
 `;
 
 const CalendarListForMemberList = () => {
+  const { selectedCalendar, setSelectedCalendar } = useCalendar();
+
+  const handleCheckboxChange = (calendarId) => {
+    setSelectedCalendar(selectedCalendar === calendarId ? null : calendarId);
+  };
   return (
     <ListContainer>
-      <CheckboxLabel1>
-        <Checkbox type='checkbox' />
+      <CheckboxLabel bgColor='var(--color-calendar-3)'>
+        <Checkbox type='checkbox' checked={selectedCalendar === 1} onChange={() => handleCheckboxChange(1)} />
         공유캘린더1
-      </CheckboxLabel1>
-      <CheckboxLabel2>
-        <Checkbox type='checkbox' />
+      </CheckboxLabel>
+      <CheckboxLabel bgColor='var(--color-calendar-5)'>
+        <Checkbox type='checkbox' checked={selectedCalendar === 2} onChange={() => handleCheckboxChange(2)} />
         공유캘린더2
-      </CheckboxLabel2>
+      </CheckboxLabel>
     </ListContainer>
   );
 };

@@ -22,10 +22,9 @@ import { AuthContext } from '../../../../context/AuthContext';
 import CalendarListForMemberList from './Members/CalendarListForMemberList';
 
 const NavContainer = styled.div`
-  flex: 1; /* 📌 남은 공간을 모두 차지하도록 설정 */
+  flex: 1;
   margin: 20px 40px;
-  //overflow-y: auto; /* 📌 내부 스크롤 추가 */
-  padding-bottom: 20px; /* 스크롤 시 로그아웃 버튼과 겹치지 않도록 여백 추가 */
+  padding-bottom: 20px;
 `;
 
 const NavItem = styled.li`

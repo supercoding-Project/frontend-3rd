@@ -5,6 +5,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { AuthContext } from '../../context/AuthContext';
 import { useForm } from 'react-hook-form';
+import axios from 'axios';
 
 const Overlay = styled.div`
   position: fixed;
@@ -204,10 +205,38 @@ const LoginModal = ({ setOpenLoginModal }) => {
   };
 
   const onSubmit = async (data) => {
-    await new Promise((r) => setTimeout(r, 1000));
-    const userData = { email: data.email, password: data.password };
-    login(userData); // login 함수 호출, 가짜 JWT 토큰 사용
-    setOpenLoginModal(false);
+    // await new Promise((r) => setTimeout(r, 1000));
+    // const userData = { email: data.email, password: data.password };
+    // login(userData); // login 함수 호출, 가짜 JWT 토큰 사용
+    // setOpenLoginModal(false);
+    try {
+      const res = await axios.post('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/login', {
+        email: data.email,
+        password: data.password,
+      });
+
+      console.log(res);
+
+      const { isSuccess, data: responseData } = res.data;
+
+      if (isSuccess) {
+        const { access_token, refresh_token, username, email } = responseData;
+
+        localStorage.setItem('access_token', access_token);
+        localStorage.setItem('refresh_token', refresh_token);
+        localStorage.setItem('user', JSON.stringify({ username, email }));
+
+        //로그인 상태를 AuthContext에 반영영
+        login({ username, email, access_token });
+        alert(responseData.message + '🎉');
+      } else {
+        alert('🚨 로그인 실패하였습니다.');
+      }
+    } catch (error) {
+      console.error(error);
+      console.log(data);
+      alert('🚨 로그인 실패하였습니다.');
+    }
   };
   return (
     <Overlay onClick={handleCloseModal}>

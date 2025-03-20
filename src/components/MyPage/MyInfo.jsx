@@ -94,6 +94,7 @@ const SaveButton = styled.button`
 const MyInfo = () => {
   const [name, setName] = useState('김하진');
   const [email, setEmail] = useState('hajin.kim27@example.com');
+  const [phoneNumber, setPhoneNumber] = useState('010-1234-5678');
   const [profileImage, setProfileImage] = useState(userProfileImg);
 
   // 프로필 이미지 변경 핸들러
@@ -127,6 +128,9 @@ const MyInfo = () => {
 
         <Label>이름</Label>
         <Input type='text' value={name} onChange={(e) => setName(e.target.value)} />
+
+        <Label>핸드폰</Label>
+        <Input type='phoneNumber' value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
 
         <Label>이메일</Label>
         <Input type='email' value={email} onChange={(e) => setEmail(e.target.value)} />

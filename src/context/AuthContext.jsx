@@ -4,16 +4,17 @@ import React, { createContext, useReducer, useEffect } from 'react';
 const initialState = {
   user: null,
   isAuthenticated: false,
-  token: null, // JWT 토큰을 추가
+  access_token: null,
+  refresh_token: null,
 };
 
 // 2. Reducer 함수
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
-      return { ...state, user: action.payload.user, token: action.payload.token, isAuthenticated: true };
+      return { ...state, user: action.payload.user, access_token: action.payload.token, isAuthenticated: true };
     case 'LOGOUT':
-      return { ...state, user: null, token: null, isAuthenticated: false };
+      return { ...state, user: null, access_token: null, isAuthenticated: false };
     default:
       return state;
   }
@@ -28,24 +29,27 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+    const storedToken = localStorage.getItem('access_token');
     if (storedUser && storedToken) {
       dispatch({ type: 'LOGIN', payload: { user: JSON.parse(storedUser), token: storedToken } });
     }
   }, []);
 
+  useEffect(() => {
+    console.log('Auth State:', state); // 상태 확인
+  }, [state]);
+
   const login = (userData) => {
-    // 가짜 JWT 토큰 생성 (실제 환경에서는 백엔드에서 받음)
-    const fakeToken = 'fake-jwt-token-1234567890';
+    const { username, email, access_token } = userData;
 
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', fakeToken);
-    dispatch({ type: 'LOGIN', payload: { user: userData, token: fakeToken } });
+    localStorage.setItem('access_token', access_token);
+    dispatch({ type: 'LOGIN', payload: { user: userData, access_token: access_token } });
   };
 
   const logout = () => {
     localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
     dispatch({ type: 'LOGOUT' });
   };
 
