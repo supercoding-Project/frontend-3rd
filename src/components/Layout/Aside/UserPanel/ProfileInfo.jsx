@@ -31,7 +31,13 @@ const UserEmail = styled.div`
 `;
 
 const ProfileInfo = () => {
-  const { user } = useContext(AuthContext); //로그인한 유저 정보 가져오기
+  const { user } = useContext(AuthContext);
+
+  const handleButton = () => {
+    console.log(profileImage);
+  };
+
+  //로그인한 유저 정보 가져오기
   const profileImage = user?.ProfileImage || userProfileImg;
   return (
     <ProfileContainer>
@@ -39,6 +45,7 @@ const ProfileInfo = () => {
       <UserInfo>
         <UserName>{user?.username || '사용자'}</UserName>
         <UserEmail>{user?.email || '이메일 없음'}</UserEmail>
+        <button onClick={handleButton}>확인</button>
       </UserInfo>
     </ProfileContainer>
   );

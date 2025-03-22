@@ -12,7 +12,7 @@ const initialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
-      return { ...state, user: action.payload.user, access_token: action.payload.token, isAuthenticated: true };
+      return { ...state, user: action.payload.user, access_token: action.payload.access_token, isAuthenticated: true };
     case 'LOGOUT':
       return { ...state, user: null, access_token: null, isAuthenticated: false };
     default:
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('access_token');
     if (storedUser && storedToken) {
-      dispatch({ type: 'LOGIN', payload: { user: JSON.parse(storedUser), token: storedToken } });
+      dispatch({ type: 'LOGIN', payload: { user: JSON.parse(storedUser), access_token: storedToken } });
     }
   }, []);
 
@@ -44,12 +44,13 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('access_token', access_token);
-    dispatch({ type: 'LOGIN', payload: { user: userData, access_token: access_token } });
+    dispatch({ type: 'LOGIN', payload: { user: userData, access_token } });
   };
 
   const logout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     dispatch({ type: 'LOGOUT' });
   };
 

@@ -170,6 +170,7 @@ const LoginModal = ({ setOpenLoginModal }) => {
     handleSubmit,
     formState: { isSubmitting, isSubmitted, errors },
   } = useForm();
+
   const [pwCheck, setPwCheck] = useState({
     type: 'password',
     value: false,
@@ -226,7 +227,7 @@ const LoginModal = ({ setOpenLoginModal }) => {
         localStorage.setItem('refresh_token', refresh_token);
         localStorage.setItem('user', JSON.stringify({ username, email }));
 
-        //로그인 상태를 AuthContext에 반영영
+        //로그인 상태를 AuthContext에 반영
         login({ username, email, access_token });
         alert(responseData.message + '🎉');
       } else {

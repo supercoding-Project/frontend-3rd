@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
-import { data } from 'react-router-dom';
 
 const DEFAULT_PROFILE_IMAGE = '/Basic-User-Img.png';
 
@@ -156,7 +155,6 @@ const ProfileImageContainer = styled.div`
   background: var(--color-bg-secondary);
   padding: 20px;
   border-radius: 10px;
-  //box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   width: 400px;
 `;
 
@@ -207,16 +205,13 @@ const SignUpModal = ({ setOpenSignupModal }) => {
     const file = e.target.files[0];
     if (file) {
       console.log('선택된 파일:', file);
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다!');
-        return;
-      }
       const reader = new FileReader();
       reader.onloadend = () => {
         console.log('변환된 이미지 URL:', reader.result);
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
+      setProfileImage(file);
     }
   };
 
@@ -247,23 +242,12 @@ const SignUpModal = ({ setOpenSignupModal }) => {
         'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/check-email',
         { email }
       );
-      // if (res.data.isSuccess) {
-      //   setIsEmailChecked(true);
-      //   setEmailError(null);
-      //   console.log(res.data);
-      //   alert('✅ ' + res.data.data);
-      // } else {
-      //   setEmailError('🚨이미 사용 중인 이메일입니다.');
-      //   setIsEmailChecked(false);
-      // }
       if (res.data.data === '사용 가능한 이메일입니다.') {
-        console.log('성공');
         setIsEmailChecked(true);
         setEmailError(null);
         console.log(res.data);
         alert('✅ ' + res.data.data);
       } else {
-        console.log('실패');
         console.log(res.data);
         alert('🚨' + res.data.data);
         setIsEmailChecked(false);
@@ -296,9 +280,9 @@ const SignUpModal = ({ setOpenSignupModal }) => {
     if (profileImage) {
       formData.append('image', profileImage);
     } else {
-      const response = await fetch(DEFAULT_PROFILE_IMAGE);
-      const blob = await response.blob();
-      formData.append('image', blob, 'default-profile.png');
+      // const response = await fetch(DEFAULT_PROFILE_IMAGE);
+      // const blob = await response.blob();
+      formData.append('image', new Blob());
     }
 
     console.log('formdata내용');
@@ -355,11 +339,10 @@ const SignUpModal = ({ setOpenSignupModal }) => {
       <ModalContainer>
         <SignupContainer>Sign Up</SignupContainer>
         <LoginForm onSubmit={handleSubmit(onSubmit)}>
-          {/* ✅ 프로필 이미지 업로드 */}
           <ProfileImageContainer>
-            <ProfileImage src={previewImage || '/Basic-User-Img.png'} alt='Profile Preview' />
-            <ImageUploadLabel htmlFor='profileUpload'>이미지 업로드</ImageUploadLabel>
-            <input id='profileUpload' type='file' style={{ display: 'none' }} onChange={handleImageChange} />
+            <ProfileImage src={previewImage} alt='Profile Preview' />
+            <ImageUploadLabel htmlFor='profileImage'>프로필 이미지 업로드</ImageUploadLabel>
+            <input id='profileImage' type='file' style={{ display: 'none' }} onChange={handleImageChange} />
           </ProfileImageContainer>
           <ContentDiv>
             <Input
