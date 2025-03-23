@@ -8,23 +8,28 @@ import Notifications from './components/Notifications/Notifications';
 import Toast from './components/Notifications/Toast';
 import ChatList from './components/Chat/ChatList';
 import ScheduleEdit from './pages/ScheduleEdit/ScheduleEdit';
+import MemberList from './pages/Members/MemberList';
+import { CalendarProvider } from './context/CalendarContext';
 
 const App = () => {
   const location = useLocation();
   const hideToastPages = ['/chat-list']; // 토스트 알림 안 뜨게 할 페이지 목록
   return (
     <AuthProvider>
-      <GlobalStyle />
-      {!hideToastPages.includes(location.pathname) && <Toast />}
-      <Routes>
-        <Route path='/' element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path='/myPage' element={<MyPage />} />
-          <Route path='/notifications' element={<Notifications />} />
-          <Route path='/schedule-edit' element={<ScheduleEdit />} />
-        </Route>
-        <Route path='/chat-list' element={<ChatList />} />
-      </Routes>
+      <CalendarProvider>
+        <GlobalStyle />
+        {!hideToastPages.includes(location.pathname) && <Toast />}
+        <Routes>
+          <Route path='/' element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path='/myPage' element={<MyPage />} />
+            <Route path='/notifications' element={<Notifications />} />
+            <Route path='/schedule-edit' element={<ScheduleEdit />} />
+            <Route path='/members' element={<MemberList />} />
+          </Route>
+          <Route path='/chat-list' element={<ChatList />} />
+        </Routes>
+      </CalendarProvider>
     </AuthProvider>
   );
 };

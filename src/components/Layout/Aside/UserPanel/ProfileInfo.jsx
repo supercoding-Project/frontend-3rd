@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import userProfileImg from '/Basic-User-Img.png';
 import styled from 'styled-components';
+import { AuthContext } from '../../../../context/AuthContext';
 
 const ProfileContainer = styled.div`
   text-align: center;
@@ -30,12 +31,21 @@ const UserEmail = styled.div`
 `;
 
 const ProfileInfo = () => {
+  const { user } = useContext(AuthContext);
+
+  const handleButton = () => {
+    console.log(profileImage);
+  };
+
+  //로그인한 유저 정보 가져오기
+  const profileImage = user?.ProfileImage || userProfileImg;
   return (
     <ProfileContainer>
-      <ProfileImage src={userProfileImg} alt='profile' />
+      <ProfileImage src={profileImage} alt='profile' />
       <UserInfo>
-        <UserName>김하진</UserName>
-        <UserEmail>hajin.kim27@example.com</UserEmail>
+        <UserName>{user?.username || '사용자'}</UserName>
+        <UserEmail>{user?.email || '이메일 없음'}</UserEmail>
+        <button onClick={handleButton}>확인</button>
       </UserInfo>
     </ProfileContainer>
   );
