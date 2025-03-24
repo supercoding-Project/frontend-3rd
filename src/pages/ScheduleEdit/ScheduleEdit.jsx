@@ -1,19 +1,21 @@
-import { useRef, useState } from 'react';
-import { BsChevronDown, BsChevronRight, BsPlusLg } from 'react-icons/bs';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { BsArrowRepeat } from 'react-icons/bs';
+import { useEffect, useRef, useState } from 'react';
 
 const ScheduleEdit = () => {
-  const [showCalendarDropDown, setShowCalendarDropDown] = useState(false);
-  const [calendar, setCalendar] = useState('내 캘린더');
-  const [showColorCategoryDropDown, setShowColorCategoryDropDown] = useState(false);
-  const [colorCategory, setColorCategory] = useState('#E36B15');
+  const [showCalendarDropdown, setShowCalendarDropdown] = useState(false);
+  const [showColorDropdown, setShowColorDropdown] = useState(false);
+  const [currentCalendarDropdownOption, setCurrentCalendarDropdownOption] = useState('내 캘린더');
+  const [currentColorDropdownOption, setCurrentColorDropdownOption] = useState('#E36B15');
 
-  const calendarDropDownRef = useRef();
+  const navigate = useNavigate();
 
-  const calendars = ['내 캘린더', '공유 캘린더', '할 일'];
+  const calendarDropdownRef = useRef(null);
+  const colorDropdownRef = useRef(null);
 
-  const colors = [
+  const calendarOptions = ['내 캘린더', '공유 캘린더', '할 일'];
+  const colorOptions = [
     '#E36B15',
     '#F5A623',
     '#17A589',
@@ -26,301 +28,324 @@ const ScheduleEdit = () => {
     '#6E2C00',
   ];
 
-  const handleShowCalendarDropDown = (e) => {
-    setShowCalendarDropDown(!showCalendarDropDown);
+  const handleOpenCalendarDropdown = (event) => {
+    setShowCalendarDropdown((prevShowCalendarDropdown) => !prevShowCalendarDropdown);
+
+    if (event.target.tagName === 'LI') {
+      setCurrentCalendarDropdownOption(event.target.innerHTML);
+    }
   };
 
-  const handleShowColorCategoryDropDown = () => {
-    setShowColorCategoryDropDown(!showColorCategoryDropDown);
+  const handleOpenColorDropdown = (event) => {
+    setShowColorDropdown((prevShowColorDropdown) => !prevShowColorDropdown);
+
+    if (event.target.tagName === 'LI') {
+      setCurrentColorDropdownOption(event.target.innerHTML);
+    }
   };
+
+  const handleClickOutside = (event) => {
+    if (calendarDropdownRef.current && !calendarDropdownRef.current.contains(event.target)) {
+      setShowCalendarDropdown(false);
+    }
+    if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target)) {
+      setShowColorDropdown(false);
+    }
+  };
+
+  const handleClickCancel = () => {
+    const confirm = window.confirm('정말 취소하시겠습니까?');
+
+    if (confirm) {
+      navigate('/');
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div>
-      <PrevLink to={-1}>이전으로 돌아가기</PrevLink>
+    <Container>
+      <Nav>
+        <Link to={-1}>이전으로 돌아가기</Link>
+      </Nav>
 
-      <ScheduleForm>
-        <InputContainer>
+      <SchedulesForm>
+        <FromGroup>
           <label>제목</label>
           <input type='text' />
-        </InputContainer>
-        <InputContainer>
+        </FromGroup>
+        <FromGroup>
           <label>장소</label>
           <input type='text' />
-        </InputContainer>
-        <InputContainer>
+        </FromGroup>
+        <FromGroup>
           <label>일시</label>
-          <DateInput>
+          <DateTimeGroup>
             <input type='date' />
             <input type='time' />
-            <div>-</div>
+            <span>-</span>
             <input type='date' />
             <input type='time' />
-          </DateInput>
-        </InputContainer>
-        <InputContainer>
+          </DateTimeGroup>
+          <SchedulesRepeatButton type='button'>
+            <BsArrowRepeat />
+            <span>반복</span>
+          </SchedulesRepeatButton>
+        </FromGroup>
+        <FromGroup>
           <label>참석자</label>
           <input type='text' />
-          <button type='button'>
-            <BsPlusLg />
-          </button>
-        </InputContainer>
-        <InputContainer>
+        </FromGroup>
+        <FromGroup>
           <label>캘린더</label>
-          <CalendarDropDown ref={calendarDropDownRef}>
-            <button type='button' onClick={handleShowCalendarDropDown}>
-              <span>{calendar}</span>
-              {showCalendarDropDown ? <BsChevronDown /> : <BsChevronRight />}
-            </button>
-            {showCalendarDropDown && (
-              <ul>
-                {calendars.map((calendar) => (
-                  <li key={calendar}>{calendar}</li>
+          <Dropdown onClick={handleOpenCalendarDropdown} ref={calendarDropdownRef}>
+            <CalendarDropdownTrigger $isOpen={showCalendarDropdown}>
+              <span>{currentCalendarDropdownOption}</span>
+            </CalendarDropdownTrigger>
+            {showCalendarDropdown && (
+              <CalendarDropdownMenu>
+                {calendarOptions.map((option) => (
+                  <CalendarDropdownItem key={option}>{option}</CalendarDropdownItem>
                 ))}
-              </ul>
+              </CalendarDropdownMenu>
             )}
-          </CalendarDropDown>
-        </InputContainer>
-        <InputContainer>
+          </Dropdown>
+        </FromGroup>
+        <FromGroup>
           <label>범주</label>
-          <ColorCategoryDropDown>
-            <button type='button' onClick={handleShowColorCategoryDropDown}>
-              <ColorBox $bgColor={colorCategory}></ColorBox>
-              {showColorCategoryDropDown ? <BsChevronDown /> : <BsChevronRight />}
-            </button>
-            {showColorCategoryDropDown && (
-              <ul>
-                {colors.map((color) => (
-                  <li key={color}>
-                    <ColorBox $bgColor={color}></ColorBox>
-                    <div></div>
-                  </li>
+          <Dropdown onClick={handleOpenColorDropdown} ref={colorDropdownRef}>
+            <ColorDropdownTrigger $isOpen={showColorDropdown} $color={currentColorDropdownOption}>
+              <span>{currentColorDropdownOption}</span>
+            </ColorDropdownTrigger>
+            {showColorDropdown && (
+              <ColorDropdownMenu>
+                {colorOptions.map((option) => (
+                  <ColorDropdownItem key={option} $color={option}>
+                    {option}
+                  </ColorDropdownItem>
                 ))}
-              </ul>
+              </ColorDropdownMenu>
             )}
-          </ColorCategoryDropDown>
-        </InputContainer>
-        <InputContainer>
-          <label>설정</label>
+          </Dropdown>
+        </FromGroup>
+        <FromGroup>
+          <label>설명</label>
           <textarea></textarea>
-        </InputContainer>
-        <ButtonContainer>
-          <button type='button'>취소</button>
+        </FromGroup>
+        <ButtonGroup>
+          <button type='button' onClick={handleClickCancel}>
+            취소
+          </button>
           <button type='submit'>저장</button>
-        </ButtonContainer>
-      </ScheduleForm>
-    </div>
+        </ButtonGroup>
+      </SchedulesForm>
+    </Container>
   );
 };
 
 export default ScheduleEdit;
 
-const PrevLink = styled(Link)`
-  text-decoration: none;
-  font-size: var(--font-sm);
-  color: black;
+const Container = styled.div``;
+
+const Nav = styled.nav`
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 20px;
+
+  & a {
+    font-size: var(--font-sm);
+    color: black;
+  }
 `;
 
-const ScheduleForm = styled.form`
+const SchedulesForm = styled.form`
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border-top: 1px solid var(--color-border);
-  padding: 20px 0;
-  margin-top: 20px;
-
-  & div:nth-child(7) {
-    align-items: start;
-
-    & label {
-      margin-top: 8px;
-    }
-  }
 `;
 
-const InputContainer = styled.div`
+const FromGroup = styled.div`
   display: flex;
-  align-items: center;
 
   & label {
-    width: 80px;
     font-size: var(--font-md);
-    font-weight: 400;
+    font-weight: bold;
+    width: 100px;
+    margin-top: 6px;
   }
 
-  & > input {
+  & input,
+  textarea {
+    width: 665px;
     border: 1px solid var(--color-border);
-    width: 550px;
-    height: 30px;
-    padding: 0 8px;
     outline: none;
-  }
+    padding: 5px;
 
-  & button {
-    width: 30px;
-    height: 30px;
-    background: transparent;
-    border: none;
-    border-top: 1px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-
-  & textarea {
-    width: 550px;
-    height: 200px;
-    resize: none;
-    outline: none;
-    border: 1px solid var(--color-border);
-    padding: 8px;
-    overflow-y: auto;
-  }
-`;
-
-const DateInput = styled.div`
-  display: flex;
-  gap: 5px;
-
-  & div {
-    color: var(--color-border);
-    margin-top: 4px;
+    &:focus {
+      border-color: var(--color-main-active);
+    }
   }
 
   & input {
     height: 30px;
-    border: 1px solid var(--color-border);
-    padding: 0px 8px;
-    outline: none;
   }
 
-  & input[type='time'] {
-    width: 130px;
+  & textarea {
+    height: 200px;
+    resize: none;
+    overflow-y: auto;
   }
 `;
 
-const CalendarDropDown = styled.div`
-  width: 200px;
-  position: relative;
+const DateTimeGroup = styled.div`
+  width: 600px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 
-  & button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: none;
-    background: transparent;
+  & input {
     width: 100%;
-    border: 1px solid var(--color-border);
-    font-size: var(--font-md);
-    padding: 0 8px;
-    cursor: pointer;
+  }
+`;
+
+const SchedulesRepeatButton = styled.button`
+  width: 60px;
+  height: 30px;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: none;
+  background: var(--color-bg-primary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-main-active);
+    color: white;
+  }
+`;
+
+const Dropdown = styled.div`
+  width: 200px;
+  height: 30px;
+  border: 1px solid var(--color-border);
+  font-size: var(--font-sm);
+  position: relative;
+`;
+
+const CalendarDropdownTrigger = styled.div`
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+  font-weight: 400;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+    transform: ${({ $isOpen }) => ($isOpen ? 'rotate(135deg)' : 'rotate(45deg)')};
+    margin-right: 2px;
+    margin-bottom: ${({ $isOpen }) => ($isOpen ? '5px' : '2px')};
+  }
+`;
+
+const CalendarDropdownMenu = styled.ul`
+  width: 100%;
+  border: 0.5px solid black;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background: white;
+  z-index: 1;
+  position: absolute;
+  top: 28px;
+`;
+
+const CalendarDropdownItem = styled.li`
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
   }
 
-  & button svg {
-    width: 10px;
-    height: 10px;
-  }
-
-  & ul {
-    position: absolute;
-    top: 35px;
-    border: 1px solid var(--color-border);
-    width: 200px;
-    background: white;
-    z-index: 1;
-  }
-
-  & li {
-    padding: 10px 8px;
-    font-size: var(--font-md);
-    border-bottom: 1px solid var(--color-border);
-    cursor: pointer;
-  }
-
-  & li:hover {
-    background: var(--color-bg-hover);
+  &:hover {
     font-weight: 400;
-  }
-
-  & li:last-child {
-    border: none;
-  }
-`;
-
-const ColorCategoryDropDown = styled.div`
-  width: 200px;
-  position: relative;
-
-  & button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    border: 1px solid var(--color-border);
-    background: transparent;
-    font-size: var(--font-md);
-    padding: 0 8px;
-    cursor: pointer;
-  }
-
-  & button svg {
-    width: 10px;
-    height: 10px;
-  }
-
-  & ul {
-    width: 500px;
-    padding: 8px;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    position: absolute;
-    top: 35px;
-    border: 1px solid var(--color-border);
-    background: white;
-    z-index: 1;
-  }
-
-  & li {
-    display: flex;
-    cursor: pointer;
-  }
-
-  & li div:last-child {
-    flex-grow: 1;
-    height: 15px;
-    background: var(--color-bg-primary);
-  }
-
-  & li:hover div:last-child {
     background: var(--color-bg-hover);
   }
 `;
 
-const ColorBox = styled.div`
-  background: ${({ $bgColor }) => $bgColor};
-  width: 15px;
-  height: 15px;
+const ColorDropdownTrigger = styled(CalendarDropdownTrigger)`
+  & span {
+    width: 90px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-primary);
+    border-left: 15px solid ${({ $color }) => $color};
+  }
 `;
 
-const ButtonContainer = styled.div`
+const ColorDropdownMenu = styled(CalendarDropdownMenu)`
+  width: 500px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+`;
+
+const ColorDropdownItem = styled.li`
+  height: 15px;
+  width: calc((100% - 4 * 10px) / 5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-primary);
+  border-left: 15px solid ${({ $color }) => $color};
+  cursor: pointer;
+
+  &:hover {
+    font-weight: 400;
+    background: var(--color-bg-hover);
+  }
+`;
+
+const ButtonGroup = styled.div`
   border-top: 1px solid var(--color-border);
   padding-top: 20px;
+  display: flex;
+  gap: 10px;
 
   & button {
-    border: 1px solid var(--color-border);
-    padding: 5px 16px;
-    background: transparent;
+    border: none;
+    background: var(--color-bg-primary);
+    height: 30px;
+    padding: 0px 16px;
     cursor: pointer;
   }
 
-  & button:hover {
+  & button:first-child:hover {
     background: var(--color-bg-hover);
   }
 
-  & button:last-child {
-    margin-left: 10px;
+  & button:last-child:hover {
+    background: var(--color-main-active);
+    color: white;
   }
 `;
