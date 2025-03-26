@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import NotificationItem from './NotificationItem';
 import { BsCheckLg } from 'react-icons/bs';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 
 const NotificationsContainer = styled.div``;
 const NotificationsHeader = styled.div`
@@ -26,6 +28,46 @@ const NotificationsHeader = styled.div`
 `;
 
 const Notifications = () => {
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: 'event_added',
+      calendarName: '동아리',
+      eventName: '전야제',
+      location: '슈퍼 코인노래방',
+      members: 7,
+      eventTime: '2025-03-10T17:00:00',
+    },
+  ]);
+
+  useEffect(() => {
+    const socket = new SockJS('http://localhost:8080/alarms');
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {
+        Authorization: 'Bearer YOUR_TOKEN_HERE',
+      },
+      onConnect: (frame) => {
+        console.log('WebSocket 연결됨:', frame);
+        stompClient.subscribe('/user/queue/alarms', (message) => {
+          const newNotification = JSON.parse(message.body);
+          console.log('새 알림 수신:', newNotification);
+          setNotifications((prev) => [newNotification, ...prev]);
+        });
+      },
+      onStompError: (error) => {
+        console.error('WebSocket 연결 실패:', error);
+      },
+    });
+
+    stompClient.activate();
+
+    return () => {
+      stompClient.deactivate();
+      console.log('WebSocket 연결 종료');
+    };
+  }, []);
+
   return (
     <NotificationsContainer>
       <NotificationsHeader>
@@ -35,7 +77,11 @@ const Notifications = () => {
           전체 확인
         </button>
       </NotificationsHeader>
-      <NotificationItem
+      {notifications.map((notification) => (
+        <NotificationItem key={notification.id} {...notification} />
+      ))}
+
+      {/* <NotificationItem
         id={1}
         type='event_added'
         calendarName='동아리'
@@ -87,7 +133,7 @@ const Notifications = () => {
         location='슈퍼매직 미용실'
         members={5}
         eventTime='2025-03-03T14:00:00'
-      />
+      /> */}
     </NotificationsContainer>
   );
 };
