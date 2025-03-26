@@ -32,20 +32,21 @@ const UserEmail = styled.div`
 
 const ProfileInfo = () => {
   const { user } = useContext(AuthContext);
+  console.log('🟠 사이드바에서 가져온 유저 정보:', user);
 
-  const handleButton = () => {
-    console.log(profileImage);
-  };
+  // 프로필 이미지 URL을 절대 경로로 변경
+  const profileImage = user?.profileImage
+    ? `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080${user.profileImage}`
+    : userProfileImg;
+  console.log('🟠 프로필사진 url:', profileImage);
 
   //로그인한 유저 정보 가져오기
-  const profileImage = user?.ProfileImage || userProfileImg;
   return (
     <ProfileContainer>
       <ProfileImage src={profileImage} alt='profile' />
       <UserInfo>
         <UserName>{user?.username || '사용자'}</UserName>
         <UserEmail>{user?.email || '이메일 없음'}</UserEmail>
-        <button onClick={handleButton}>확인</button>
       </UserInfo>
     </ProfileContainer>
   );
