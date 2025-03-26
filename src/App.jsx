@@ -9,6 +9,7 @@ import Toast from './components/Notifications/Toast';
 import ChatList from './components/Chat/ChatList';
 import ScheduleEdit from './pages/ScheduleEdit/ScheduleEdit';
 import MemberList from './pages/Members/MemberList';
+import CreateCalendar from './pages/CreateCalendar/CreateCalendar';
 import { CalendarProvider } from './context/CalendarContext';
 
 const App = () => {
@@ -25,6 +26,7 @@ const App = () => {
             <Route path='/myPage' element={<MyPage />} />
             <Route path='/notifications' element={<Notifications />} />
             <Route path='/schedule-edit' element={<ScheduleEdit />} />
+            <Route path='/create-calendar' element={<CreateCalendar />} />
             <Route path='/members' element={<MemberList />} />
           </Route>
           <Route path='/chat-list' element={<ChatList />} />

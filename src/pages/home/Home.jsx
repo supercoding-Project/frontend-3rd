@@ -1,21 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Month from '../../components/Calendar/Month';
 import Week from '../../components/Calendar/Week';
 import Day from '../../components/Calendar/Day';
 import styled from 'styled-components';
+import { useCalendar } from '../../context/CalendarContext';
 
 const Home = () => {
   const [selected, setSelected] = useState('month');
+  const { selectedCalendar, events, fetchEvent } = useCalendar();
+
+  // useEffect(() => {
+  //   fetchEvent();
+  // }, [fetchEvent]);
+
+  const filteredEvents = (events ?? []).filter((event) => (selectedCalendar ?? []).includes(event.calendarId));
 
   const calendar = {
-    month: <Month />,
-    week: <Week />,
-    day: <Day />,
+    month: <Month events={filteredEvents} />,
+    week: <Week events={filteredEvents} />,
+    day: <Day events={filteredEvents} />,
   };
 
   const handleSelectButton = (selectedButton) => {
     setSelected(selectedButton);
   };
+
+  const isSharedCalendar =
+    selectedCalendar &&
+    events &&
+    selectedCalendar.some((id) => events.find((event) => event.calendarId === id)?.calendarType === 'shared');
 
   return (
     <>
@@ -30,6 +43,13 @@ const Home = () => {
           <button onClick={() => handleSelectButton('day')}>일간</button>
         </TabButton>
       </Tab>
+      <InviteButtonContainer>
+        <InviteButton onClick={() => console.log('초대 기능 구현 예정')}>참석자 초대</InviteButton>
+        <InviteButton onClick={() => console.log('초대 기능 구현 예정')}>할 일 보기</InviteButton>
+      </InviteButtonContainer>
+      {/* 공유 캘린더 선택 시 초대 버튼 표시 */}
+      {/* {isSharedCalendar && ( */}
+      {/* )} */}
 
       {calendar[selected]}
     </>
@@ -40,6 +60,7 @@ export default Home;
 
 const Tab = styled.ul`
   display: flex;
+  align-items: end;
   gap: 30px;
 `;
 
@@ -66,4 +87,24 @@ const TabButton = styled.li`
     height: 15px;
     background-color: var(--color-border);
   }
+`;
+
+const InviteButton = styled.button`
+  background-color: var(--color-main-active);
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.01;
+  &:hover {
+    background-color: var(--color-bg-primary);
+    color: black;
+  }
+`;
+
+const InviteButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
 `;

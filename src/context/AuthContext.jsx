@@ -12,9 +12,17 @@ const initialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
-      return { ...state, user: action.payload.user, access_token: action.payload.access_token, isAuthenticated: true };
+      return {
+        ...state,
+        user: action.payload.user,
+        access_token: action.payload.access_token,
+        refresh_token: action.payload.refresh_token,
+        isAuthenticated: true,
+      };
     case 'LOGOUT':
-      return { ...state, user: null, access_token: null, isAuthenticated: false };
+      return { ...state, user: null, access_token: null, isAuthenticated: false, refresh_token: null };
+    case 'UPDATE_USER':
+      return { ...state, user: { ...state.user, ...action.payload } };
     default:
       return state;
   }
@@ -29,9 +37,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('access_token');
-    if (storedUser && storedToken) {
-      dispatch({ type: 'LOGIN', payload: { user: JSON.parse(storedUser), access_token: storedToken } });
+    const storedAccessToken = localStorage.getItem('access_token');
+    const storedRefreshToken = localStorage.getItem('refresh_token');
+    if (storedUser && storedAccessToken && storedRefreshToken) {
+      dispatch({
+        type: 'LOGIN',
+        payload: { user: JSON.parse(storedUser), access_token: storedAccessToken, refresh_token: storedRefreshToken },
+      });
     }
   }, []);
 
@@ -40,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   }, [state]);
 
   const login = (userData) => {
-    const { username, email, access_token } = userData;
+    const { username, email, access_token, profileImage } = userData;
 
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('access_token', access_token);
@@ -54,5 +66,22 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGOUT' });
   };
 
-  return <AuthContext.Provider value={{ ...state, login, logout }}>{children}</AuthContext.Provider>;
+  const updateUser = (updatedUser) => {
+    dispatch({
+      type: 'LOGIN',
+      payload: {
+        user: {
+          ...state.user, // 기존 유저 정보 유지
+          ...updatedUser, // 업데이트된 정보 덮어쓰기
+        },
+        access_token: state.access_token,
+        refresh_token: state.refresh_token,
+      },
+    });
+
+    // localStorage도 업데이트
+    localStorage.setItem('user', JSON.stringify({ ...state.user, ...updatedUser }));
+  };
+
+  return <AuthContext.Provider value={{ ...state, login, logout, updateUser }}>{children}</AuthContext.Provider>;
 };
