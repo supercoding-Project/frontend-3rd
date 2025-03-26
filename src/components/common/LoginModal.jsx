@@ -221,15 +221,16 @@ const LoginModal = ({ setOpenLoginModal }) => {
       const { isSuccess, data: responseData } = res.data;
 
       if (isSuccess) {
-        const { access_token, refresh_token, username, email } = responseData;
+        const { access_token, refresh_token, username, email, profileImage } = responseData;
 
         localStorage.setItem('access_token', access_token);
         localStorage.setItem('refresh_token', refresh_token);
-        localStorage.setItem('user', JSON.stringify({ username, email }));
+        localStorage.setItem('user', JSON.stringify({ username, email, profileImage }));
 
         //로그인 상태를 AuthContext에 반영
-        login({ username, email, access_token });
-        alert(responseData.message + '🎉');
+        login({ username, email, access_token, profileImage });
+        alert(responseData.message + '🎉'); //로그인 성공하였습니다.
+        setOpenLoginModal(false);
       } else {
         alert('🚨 로그인 실패하였습니다.');
       }

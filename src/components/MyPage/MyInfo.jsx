@@ -1,7 +1,204 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import userProfileImg from '/Basic-User-Img.png';
 import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
+
+const MyInfo = () => {
+  const [userInfo, setUserInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    profileImage: userProfileImg,
+  });
+
+  const updateUser = useContext(AuthContext);
+  console.log('🔵 updateUser:', updateUser); // 추가된 디버깅 로그
+
+  //const [isLoading, setIsLoading] = useState(true);
+
+  // 로그인한 유저 정보 가져오기
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.get(
+          'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // JWT 토큰 포함
+            },
+          }
+        );
+        console.log('✅ 응답 데이터:', response);
+        console.log('✅ 응답 데이터:', response.data);
+
+        // 응답 데이터의 구조가 맞는지 확인
+        if (response.data && response.data.data) {
+          setUserInfo({
+            name: response.data.data.name || '',
+            email: response.data.data.email || '',
+            phone: response.data.data.phone || '',
+            profileImage: response.data.data.userImageUrl || userProfileImg,
+          });
+          //setIsLoading(false); // 데이터 로딩 완료 후 로딩 상태 변경
+        } else {
+          console.error('응답 데이터가 올바르지 않습니다.');
+        }
+      } catch (error) {
+        console.error('유저 정보를 불러오는 중 오류 발생:', error);
+        if (error.response) {
+          console.log('🔴 서버 응답 상태 코드:', error.response.status);
+          console.log('🔴 서버 응답 데이터:', error.response.data);
+        }
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+  // 프로필 이미지 변경 핸들러
+  const handleImageChange = (e) => {
+    // const file = e.target.files[0];
+    // if (file) {
+    //   const imageUrl = URL.createObjectURL(file);
+    //   setProfileImage(imageUrl);
+    // }
+    const file = e.target.files[0];
+    if (file) {
+      console.log('선택된 파일:', file);
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        console.log('변환된 이미지 URL:', reader.result);
+        setUserInfo((prevState) => ({
+          ...prevState,
+          profileImage: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 정보 저장 핸들러
+  const handleUpdate = async () => {
+    try {
+      console.log('🟢 회원 정보 수정 요청 시작');
+      const requestData = {
+        name: userInfo.name,
+        email: userInfo.email,
+        phone: userInfo.phone,
+        userImageUrl: userInfo.profileImage,
+      };
+
+      console.log('📤 보낸 데이터:', requestData); // 보낸 데이터 확인
+
+      const response = await axios.put(
+        'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log('✅ 서버 응답 데이터:', response.data);
+
+      if (response.data.isSuccess && response.data.data) {
+        // const updateUserInfo = {
+        //   name: response.data.data.name,
+        //   email: response.data.data.email,
+        //   phone: response.data.data.phone,
+        //   profileImage: response.data.data.userImageUrl || userProfileImg,
+        // };
+
+        // setUserInfo(updateUserInfo);
+        // updateUser(updateUserInfo);
+
+        // 🔍 디버깅 로그 추가
+        if (!response.data.isSuccess) {
+          console.error('🚨 서버 응답 isSuccess가 false입니다.');
+          alert('🚨 서버에서 오류가 발생했습니다.');
+          return;
+        }
+
+        if (!response.data.data) {
+          console.error('🚨 response.data.data가 없습니다:', response.data);
+          alert('🚨 서버에서 유효한 데이터를 받지 못했습니다.');
+          return;
+        }
+
+        const updatedUser = response.data.data;
+        console.log('🔄 업데이트된 유저 정보:', updatedUser);
+        // 전역 상태 업데이트 (AuthContext의 updateUser가 제대로 작동하는지 확인 필요)
+        console.log('🔍 updateUser 함수 체크 중...');
+        if (typeof updateUser === 'function') {
+          console.log('🔵 updateUser 함수가 존재합니다.');
+          updateUser(updatedUser);
+        } else {
+          console.error('🚨 updateUser 함수가 정의되지 않음');
+          alert('🚨 회원 정보 업데이트 중 오류가 발생했습니다.');
+          return;
+        }
+        // updateUser(updatedUser); // ✅ 전역 상태 업데이트
+        alert('✅ 회원 정보가 수정되었습니다.');
+      }
+    } catch (error) {
+      console.error('유저 정보 수정 오류:', error);
+      alert('🚨 회원 정보 수정 중 오류가 발생했습니다.');
+    }
+  };
+
+  const baseUrl = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+
+  // if (isLoading) {
+  //   return <div>로딩 중...</div>; // 로딩 중 화면 표시
+  // }
+
+  return (
+    <Container>
+      <Title>회원 정보 수정</Title>
+      <ProfileSection>
+        <ProfileImage
+          src={userInfo.profileImage ? userInfo.profileImage : `${baseUrl}${userInfo.profileImage}`}
+          alt='profile'
+        />
+        <UploadButton htmlFor='profileUpload'>프로필 이미지 변경</UploadButton>
+        <input
+          id='profileUpload'
+          type='file'
+          accept='image/*'
+          style={{ display: 'none' }}
+          onChange={handleImageChange}
+        />
+
+        <Label>이름</Label>
+        <Input type='text' value={userInfo.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
+
+        <Label>핸드폰 번호</Label>
+        <Input
+          type='text'
+          value={userInfo.phone}
+          onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })}
+        />
+
+        <Label>이메일</Label>
+        <Input
+          type='email'
+          value={userInfo.email}
+          onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
+        />
+
+        <SaveButton onClick={handleUpdate}>저장</SaveButton>
+      </ProfileSection>
+    </Container>
+  );
+};
+
+export default MyInfo;
 
 const Container = styled.div`
   display: flex;
@@ -91,143 +288,3 @@ const SaveButton = styled.button`
     color: black;
   }
 `;
-
-const MyInfo = () => {
-  // const [name, setName] = useState('김하진');
-  // const [email, setEmail] = useState('hajin.kim27@example.com');
-  // const [phoneNumber, setPhoneNumber] = useState('010-1234-5678');
-  // const [profileImage, setProfileImage] = useState(userProfileImg);
-  const [userInfo, setUserInfo] = useState({
-    name: '',
-    email: '',
-    phoneNumber: '',
-    profileImage: userProfileImg,
-  });
-
-  // 🔹 로그인한 유저 정보 가져오기
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-        console.log('저장된 토큰:', token);
-        if (!token) {
-          console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
-          return;
-        }
-        const response = await axios.get(
-          'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // JWT 토큰 포함
-            },
-          }
-        );
-        console.log('✅ 응답 데이터:', response.data);
-        setUserInfo({
-          name: response.data.name,
-          email: response.data.email,
-          phoneNumber: response.data.phoneNumber,
-          profileImage: response.data.profileImage || userProfileImg,
-        });
-      } catch (error) {
-        console.error('유저 정보를 불러오는 중 오류 발생:', error);
-        if (error.response) {
-          console.log('🔴 서버 응답 상태 코드:', error.response.status);
-          console.log('🔴 서버 응답 데이터:', error.response.data);
-        }
-      }
-    };
-
-    fetchUserInfo();
-  }, []);
-
-  // 프로필 이미지 변경 핸들러
-  const handleImageChange = (e) => {
-    // const file = e.target.files[0];
-    // if (file) {
-    //   const imageUrl = URL.createObjectURL(file);
-    //   setProfileImage(imageUrl);
-    // }
-    const file = e.target.files[0];
-    if (file) {
-      console.log('선택된 파일:', file);
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        console.log('변환된 이미지 URL:', reader.result);
-        setUserInfo((prevState) => ({
-          ...prevState,
-          profileImage: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 정보 저장 핸들러
-  const handleSave = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('name', userInfo.name);
-      formData.append('phoneNumber', userInfo.phoneNumber);
-
-      // 프로필 이미지가 변경되었을 경우 추가
-      if (userInfo.profileImage !== userProfileImg) {
-        formData.append('profileImage', userInfo.profileImage);
-      }
-
-      await axios.put('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage', formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      alert('회원 정보가 수정되었습니다.');
-    } catch (error) {
-      console.error('유저 정보 수정 오류:', error);
-      alert('🚨 회원 정보 수정 중 오류가 발생했습니다.');
-    }
-  };
-
-  return (
-    <Container>
-      <Title>회원 정보 수정</Title>
-      <ProfileSection>
-        <ProfileImage src={userInfo.profileImage} alt='profile' />
-        <UploadButton htmlFor='profileUpload'>프로필 이미지 변경</UploadButton>
-        <input
-          id='profileUpload'
-          type='file'
-          accept='image/*'
-          style={{ display: 'none' }}
-          onChange={handleImageChange}
-        />
-
-        <Label>이름</Label>
-        <Input type='text' value={userInfo.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
-
-        <Label>핸드폰</Label>
-        <Input
-          type='phoneNumber'
-          value={userInfo.phoneNumber}
-          onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
-        />
-
-        <Label>이메일</Label>
-        <Input
-          type='email'
-          value={userInfo.email}
-          onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
-        />
-
-        <SaveButton onClick={handleSave}>저장</SaveButton>
-      </ProfileSection>
-    </Container>
-  );
-};
-
-export default MyInfo;

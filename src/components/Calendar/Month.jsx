@@ -41,11 +41,11 @@ const Month = () => {
   return (
     <Container>
       <DateContainer>
-        <div>{format(currentDate, 'yyyy. MM.')}</div>
         <div>
           <button type='button' onClick={() => handleChangeMonth('prev')}>
             <BsChevronLeft />
           </button>
+          <div>{format(currentDate, 'yyyy. MM.')}</div>
           <button type='button' onClick={() => handleChangeMonth('next')}>
             <BsChevronRight />
           </button>
@@ -82,19 +82,25 @@ const Container = styled.div`
 
 const DateContainer = styled.div`
   display: flex;
-  align-items: end;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
   height: 6%;
   padding-bottom: 10px;
 
   & button {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 5px 10px;
     border: none;
     background: transparent;
     cursor: pointer;
+  }
+
+  & div {
+    display: flex;
+    flex-direction: row;
+    padding-top: 3px;
   }
 
   & svg {
