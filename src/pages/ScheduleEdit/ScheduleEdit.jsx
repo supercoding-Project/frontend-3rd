@@ -28,20 +28,20 @@ const ScheduleEdit = () => {
     '#6E2C00',
   ];
 
-  const handleOpenCalendarDropdown = (event) => {
+  const handleOpenCalendarDropdown = () => {
     setShowCalendarDropdown((prevShowCalendarDropdown) => !prevShowCalendarDropdown);
-
-    if (event.target.tagName === 'LI') {
-      setCurrentCalendarDropdownOption(event.target.innerHTML);
-    }
   };
 
-  const handleOpenColorDropdown = (event) => {
-    setShowColorDropdown((prevShowColorDropdown) => !prevShowColorDropdown);
+  const handleChangeCalendarDropdownOption = (event) => {
+    setCurrentCalendarDropdownOption(event.target.innerHTML);
+  };
 
-    if (event.target.tagName === 'LI') {
-      setCurrentColorDropdownOption(event.target.innerHTML);
-    }
+  const handleOpenColorDropdown = () => {
+    setShowColorDropdown((prevShowColorDropdown) => !prevShowColorDropdown);
+  };
+
+  const handleChangeColorDropdownOption = (event) => {
+    setCurrentColorDropdownOption(event.target.innerHTML);
   };
 
   const handleClickOutside = (event) => {
@@ -53,7 +53,7 @@ const ScheduleEdit = () => {
     }
   };
 
-  const handleClickCancel = () => {
+  const handleClickCancelButton = () => {
     const confirm = window.confirm('정말 취소하시겠습니까?');
 
     if (confirm) {
@@ -110,7 +110,9 @@ const ScheduleEdit = () => {
             {showCalendarDropdown && (
               <CalendarDropdownMenu>
                 {calendarOptions.map((option) => (
-                  <CalendarDropdownItem key={option}>{option}</CalendarDropdownItem>
+                  <CalendarDropdownItem key={option} onClick={handleChangeCalendarDropdownOption}>
+                    {option}
+                  </CalendarDropdownItem>
                 ))}
               </CalendarDropdownMenu>
             )}
@@ -125,7 +127,7 @@ const ScheduleEdit = () => {
             {showColorDropdown && (
               <ColorDropdownMenu>
                 {colorOptions.map((option) => (
-                  <ColorDropdownItem key={option} $color={option}>
+                  <ColorDropdownItem key={option} $color={option} onClick={handleChangeColorDropdownOption}>
                     {option}
                   </ColorDropdownItem>
                 ))}
@@ -138,7 +140,7 @@ const ScheduleEdit = () => {
           <textarea></textarea>
         </FromGroup>
         <ButtonGroup>
-          <button type='button' onClick={handleClickCancel}>
+          <button type='button' onClick={handleClickCancelButton}>
             취소
           </button>
           <button type='submit'>저장</button>
