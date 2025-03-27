@@ -13,6 +13,7 @@ import MemberList from './pages/Members/MemberList';
 import CreateCalendar from './pages/CreateCalendar/CreateCalendar';
 import JoinPage from './pages/Join/JoinPage';
 import { CalendarProvider } from './context/CalendarContext';
+import Todo from './pages/Todo/Todo';
 
 const App = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const App = () => {
             <Route path='/schedule-edit' element={<ScheduleEdit />} />
             <Route path='/create-calendar' element={<CreateCalendar />} />
             <Route path='/members' element={<MemberList />} />
+            <Route path='/todo' element={<Todo />} />
           </Route>
           <Route path='/chat-list' element={<ChatList />} />
           <Route path='/chat/:roomId' element={<ChatRoom />} />

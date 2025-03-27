@@ -4,31 +4,53 @@ import Week from '../../components/Calendar/Week';
 import Day from '../../components/Calendar/Day';
 import styled from 'styled-components';
 import { useCalendar } from '../../context/CalendarContext';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
 
 const Home = () => {
   const [selected, setSelected] = useState('month');
-  // const { selectedCalendar, events, fetchEvent } = useCalendar();
+  const { selectedCalendar, dispatch } = useCalendar();
+  const [events, setEvents] = useState([]);
+  const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   fetchEvent();
-  // }, [fetchEvent]);
-
-  // const filteredEvents = (events ?? []).filter((event) => (selectedCalendar ?? []).includes(event.calendarId));
+  useEffect(() => {
+    if (selectedCalendar.length > 0) {
+      // 선택된 캘린더가 있을 경우, 첫 번째 캘린더로 API 요청을 보냄
+      const calendarId = selectedCalendar[0]; // 선택된 첫 번째 캘린더의 ID
+      const fetchEvents = async () => {
+        try {
+          const response = await axios.get(`${SERVER_URL}/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`, {
+            params: {
+              calendarIds: selectedCalendar.join(','), // 여러 개의 캘린더 ID를 쉼표로 구분하여 전달
+            },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+          });
+          setEvents(response.data.data); // 서버에서 받아온 일정을 state에 저장
+        } catch (error) {
+          console.error('일정 불러오기 오류:', error);
+        }
+      };
+      fetchEvents();
+    }
+  }, [selectedCalendar]); // selectedCalendar가 변경될 때마다 일정 업데이트
 
   const calendar = {
-    month: <Month />,
-    week: <Week />,
-    day: <Day />,
+    month: <Month events={events} />,
+    week: <Week events={events} />,
+    day: <Day events={events} />,
   };
 
   const handleSelectButton = (selectedButton) => {
     setSelected(selectedButton);
   };
 
-  // const isSharedCalendar =
-  //   selectedCalendar &&
-  //   events &&
-  //   selectedCalendar.some((id) => events.find((event) => event.calendarId === id)?.calendarType === 'shared');
+  const handleNavToTodo = () => {
+    navigate('/todo');
+  };
 
   return (
     <>
@@ -44,11 +66,8 @@ const Home = () => {
         </TabButton>
       </Tab>
       <ButtonContainer>
-        <TodoButton onClick={() => console.log('초대 기능 구현 예정')}>할 일 보기</TodoButton>
+        <TodoButton onClick={handleNavToTodo}>할 일 보기</TodoButton>
       </ButtonContainer>
-      {/* 공유 캘린더 선택 시 초대 버튼 표시 */}
-      {/* {isSharedCalendar && ( */}
-      {/* )} */}
 
       {calendar[selected]}
     </>
