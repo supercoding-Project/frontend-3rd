@@ -116,11 +116,15 @@ const ScheduleEdit = () => {
       mentionUserIds: mentionUserIds.length > 0 ? mentionUserIds : [],
     };
 
+    // 선택한 캘린더 ID 추가
+    const calendarId = selectedCalendar.calendarId;
+
     // 입력값 확인 (콘솔에 출력)
     console.log('입력한 값들:', scheduleData);
 
     try {
-      const response = await axios.post(`${SERVER_URL}/api/v1/schedules`, scheduleData, {
+      // calendarId를 URL에 쿼리 파라미터로 추가
+      const response = await axios.post(`${SERVER_URL}/api/v1/schedules?calendarId=${calendarId}`, scheduleData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('서버 응답:', response);
