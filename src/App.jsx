@@ -16,8 +16,8 @@ const App = () => {
   const location = useLocation();
   const hideToastPages = ['/chat-list']; // 토스트 알림 안 뜨게 할 페이지 목록
   return (
-    <AuthProvider>
-      <CalendarProvider>
+    <CalendarProvider>
+      <AuthProvider>
         <GlobalStyle />
         {!hideToastPages.includes(location.pathname) && <Toast />}
         <Routes>
@@ -31,8 +31,8 @@ const App = () => {
           </Route>
           <Route path='/chat-list' element={<ChatList />} />
         </Routes>
-      </CalendarProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </CalendarProvider>
   );
 };
 

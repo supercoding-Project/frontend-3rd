@@ -2,7 +2,6 @@ import React from 'react';
 import MemberTitle from '../../components/Members/MemberTitle';
 import ListOfMember from '../../components/Members/ListOfMember';
 import { useCalendar } from '../../context/CalendarContext';
-import SendInviteCode from '../../components/Members/SendInviteCode';
 
 const mockMembers = {
   1: [
@@ -19,7 +18,6 @@ const MemberList = () => {
     <div>
       <MemberTitle />
       <ListOfMember members={selectedCalendar ? mockMembers[selectedCalendar] : []} />
-      <SendInviteCode />
     </div>
   );
 };
