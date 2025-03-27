@@ -41,19 +41,21 @@ const CalendarListForMemberList = () => {
   }, []); // selectedCalendarsForMembers가 바뀔 때마다 실행
 
   const handleCheckboxChange = (calendarId) => {
-    let updatedCalendars;
     // 선택된 캘린더 목록에서 해당 캘린더를 추가하거나 제거
+    // 하나의 캘린더만 선택할 수 있도록 처리
     if (selectedCalendarsForMembers.includes(calendarId)) {
-      updatedCalendars = selectedCalendarsForMembers.filter((id) => id !== calendarId); // 체크 해제 시 제거
+      // 이미 선택된 경우 선택 해제
+      dispatch({
+        type: 'SET_SELECTED_CALENDARS',
+        payload: [],
+      });
     } else {
-      updatedCalendars = [...selectedCalendarsForMembers, calendarId]; // 체크 시 추가
+      // 새로운 캘린더 선택 시 다른 캘린더는 해제하고 해당 캘린더만 선택
+      dispatch({
+        type: 'SET_SELECTED_CALENDARS',
+        payload: [calendarId],
+      });
     }
-
-    // 상태 업데이트
-    dispatch({
-      type: 'SET_SELECTED_CALENDARS',
-      payload: updatedCalendars,
-    });
   };
 
   return (
@@ -61,16 +63,20 @@ const CalendarListForMemberList = () => {
       {loading ? (
         <p>공유 캘린더 데이터를 불러오는 중...</p> // 로딩 중 메시지
       ) : calendarList.length > 0 ? (
-        calendarList.map((calendar) => (
-          <CheckboxLabel key={calendar.calendarId}>
-            <CheckboxInput
-              bgColor={calendar.calendarColor} // calendarColor로 색상 설정
-              checked={selectedCalendarsForMembers.includes(calendar.calendarId)} // selectedCalendarsForMembers에 포함된 캘린더만 체크
-              onChange={() => handleCheckboxChange(calendar.calendarId)} // 체크박스 상태 변경 시 호출
-            />
-            {calendar.calendarName}
-          </CheckboxLabel>
-        ))
+        <>
+          {calendarList.map((calendar) => (
+            <CheckboxLabel key={calendar.calendarId}>
+              <CheckboxInput
+                bgColor={calendar.calendarColor} // calendarColor로 색상 설정
+                checked={selectedCalendarsForMembers.includes(calendar.calendarId)} // selectedCalendarsForMembers에 포함된 캘린더만 체크
+                onChange={() => handleCheckboxChange(calendar.calendarId)} // 체크박스 상태 변경 시 호출
+              />
+              {calendar.calendarName}
+            </CheckboxLabel>
+          ))}
+          {/* 선택된 캘린더가 없을 때 메시지 */}
+          {/* {selectedCalendarsForMembers.length === 0 && <p>선택된 캘린더가 없습니다.</p>} */}
+        </>
       ) : (
         <p>공유 캘린더가 없습니다.</p> // 캘린더 목록이 없을 때 표시
       )}
