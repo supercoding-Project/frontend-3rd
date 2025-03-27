@@ -23,6 +23,7 @@ const UserName = styled.div`
   font-size: var(--font-xl);
   font-weight: bold;
 `;
+
 const UserEmail = styled.div`
   font-size: var(--font-md);
   color: var(--color-text-disabled);

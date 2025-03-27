@@ -22,8 +22,8 @@ const Notifications = () => {
         console.log('토큰 확인', token);
       }
 
-      // WebSocket 연결 설정 (wss:// 사용)
-      const ws = new WebSocket(`wss://${SERVER_URL.replace('http', 'ws')}/alarms`);
+      // WebSocket 연결 설정
+      const ws = new WebSocket(`${SERVER_URL.replace('https', 'ws')}/alarms`);
 
       // WebSocket 연결 시도
       ws.onopen = () => {

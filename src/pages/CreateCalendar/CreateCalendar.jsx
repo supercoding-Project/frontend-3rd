@@ -73,7 +73,7 @@ const CreateCalendar = () => {
       calendarColor: colorCategory, // 선택된 색상 값 추가
     };
 
-    console.log('보낼 데이터:', dto); // 여기에서 console.log 추가
+    console.log('보낼 데이터:', dto); // 확인용 로그
 
     try {
       const response = await fetch(
@@ -88,16 +88,50 @@ const CreateCalendar = () => {
         }
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        alert('캘린더가 생성되었습니다!');
-        setCalendarList([...calendarList, data.data]);
-        navigate('/'); // 성공 시 리디렉션
-      } else {
-        console.error('Error creating calendar');
+      if (!response.ok) {
+        throw new Error('Error creating calendar');
       }
+
+      const data = await response.json();
+      alert('캘린더가 생성되었습니다!');
+
+      // 캘린더 리스트 업데이트
+      setCalendarList((prev) => [...prev, data.data]);
+      console.log(data);
+      console.log(data.data);
+
+      // 공유 캘린더라면 채팅방 생성
+      if (calendar === 'SHARED') {
+        setTimeout(() => createChatRoom(data.data.calendarId), 100); // 비동기 반영을 위해 약간의 딜레이 추가
+      }
+
+      navigate('/'); // 성공 시 리디렉션
     } catch (error) {
       console.error('Error:', error);
+    }
+  };
+
+  // 채팅방 생성 API 호출
+  const createChatRoom = async (calendarId) => {
+    try {
+      const response = await fetch(
+        `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/room/create/${calendarId}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const chatRoomData = await response.json();
+        console.log('채팅방 생성 완료:', chatRoomData);
+      } else {
+        console.error('채팅방 생성 실패');
+      }
+    } catch (error) {
+      console.error('채팅방 생성 에러:', error);
     }
   };
 

@@ -47,7 +47,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
 
-  body, button {
+  body, button, input {
     font-size: var(--font-lg);
     color: var(--color-primary);
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
