@@ -1,42 +1,56 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useReducer, useState } from 'react';
 
-const CalendarContext = createContext();
+// 초기 상태
+const initialState = {
+  calendarList: [], // 캘린더 목록 초기화
+  selectedCalendarsForMembers: [], // 선택한 캘린더 멤버
+  selectedCalendarsForEvents: [], // 선택한 캘린더 이벤트
+  selectedCalendar: [], // 선택한 캘린더
+};
+
+// Reducer 함수
+const calendarReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_CALENDAR_LIST':
+      return { ...state, calendarList: action.payload };
+
+    case 'CLEAR_CALENDAR_LIST': // 캘린더 리스트 초기화 (로그아웃 시 실행)
+      return { ...state, calendarList: [] };
+
+    case 'SET_SELECTED_CALENDARS':
+      return { ...state, selectedCalendarsForMembers: action.payload };
+
+    case 'SET_SELECTED_CALENDAR': // 선택한 캘린더 업데이트
+      return { ...state, selectedCalendar: action.payload };
+
+    case 'SET_SELECTED_CALENDARS_FOR_EVENTS': // 이벤트 관련 선택된 캘린더 설정
+      return { ...state, selectedCalendarsForEvents: action.payload };
+
+    default:
+      return state;
+  }
+};
+
+export const CalendarContext = createContext();
 
 // ✅ Context Provider
 export const CalendarProvider = ({ children }) => {
-  const [selectedCalendar, setSelectedCalendar] = useState([]); // 선택한 캘린더
-  //const [events, setEvents] = useState([]); // 일정 데이터
-  const [calendarList, setCalendarList] = useState([]); //캘린더목록 상태 추가
-
-  // const fetchEvent = async () => {
-  //   if (!selectedCalendar.length) {
-  //     setEvents([]); // 선택한 캘린더가 없으면 빈 배열 유지
-  //     return;
-  //   }
-
-  //   try {
-  //     // 캘린더 ID를 쉼표(,)로 구분하여 쿼리 파라미터로 전달
-  //     const calendarIds = selectedCalendar.join(',');
-  //     const response = await fetch(`http://localhost:8080/api/events?calendarIds=${calendarIds}`);
-
-  //     if (!response.ok) {
-  //       throw new Error('Failed to fetch events');
-  //     }
-
-  //     const data = await response.json();
-  //     setEvents(data);
-  //   } catch (error) {
-  //     console.error('Error fetching events:', error);
-  //   }
-  // };
-
-  // // ✅ 컴포넌트가 마운트될 때 이벤트 로드
-  // useEffect(() => {
-  //   fetchEvent();
-  // }, []);
+  const [state, dispatch] = useReducer(calendarReducer, initialState);
+  // const [calendarList, setCalendarList] = useState([]); //캘린더목록 상태 추가
+  // const [selectedCalendar, setSelectedCalendar] = useState([]); // 선택한 캘린더
+  // const [selectedCalendarsForEvents, setSelectedCalendarsForEvents] = useState([]);
+  // const [selectedCalendarsForMembers, setSelectedCalendarsForMembers] = useState([]);
 
   return (
-    <CalendarContext.Provider value={{ selectedCalendar, setSelectedCalendar, calendarList, setCalendarList }}>
+    <CalendarContext.Provider
+      value={{
+        selectedCalendar: state.selectedCalendar,
+        dispatch,
+        calendarList: state.calendarList,
+        selectedCalendarsForEvents: state.selectedCalendarsForEvents,
+        selectedCalendarsForMembers: state.selectedCalendarsForMembers,
+      }}
+    >
       {children}
     </CalendarContext.Provider>
   );
@@ -44,5 +58,9 @@ export const CalendarProvider = ({ children }) => {
 
 // ✅ Custom hook
 export const useCalendar = () => {
-  return useContext(CalendarContext);
+  const context = useContext(CalendarContext);
+  if (!context) {
+    throw new Error('useCalendar must be used within a CalendarProvider');
+  }
+  return context;
 };

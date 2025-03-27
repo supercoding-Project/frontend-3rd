@@ -18,30 +18,32 @@ const CheckboxLabel = styled.label`
   cursor: pointer;
   padding: 5px;
   position: relative;
+`;
 
-  input[type='checkbox'] {
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    margin-right: 10px;
-    position: relative;
-    background-color: ${(props) => props.bgColor || 'lightgray'};
+const CheckboxInput = styled.input.attrs(() => ({
+  type: 'checkbox',
+}))`
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  position: relative;
+  background-color: ${(props) => props.bgColor || 'lightgray'};
 
-    &:checked::after {
-      content: '✔';
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
+  &:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 `;
 
 const CalendarList = () => {
-  const { selectedCalendar, setSelectedCalendar, calendarList, setCalendarList } = useCalendar();
+  const { selectedCalendar, setSelectedCalendar, calendarList, dispatch } = useCalendar();
 
   useEffect(() => {
     axios
@@ -52,12 +54,13 @@ const CalendarList = () => {
       })
       .then((response) => {
         console.log('API 응답:', response.data);
-        setCalendarList(response.data.data); // 전역 상태 업데이트
+        // calendarList 업데이트
+        dispatch({ type: 'SET_CALENDAR_LIST', payload: response.data.data }); // 상태 업데이트
       })
       .catch((error) => {
         console.error('API 요청 에러:', error);
       });
-  }, [setCalendarList]); // 의존성 추가 (필수)
+  }, [dispatch]); // 의존성 추가 (필수)
 
   const handleCheckboxChange = (calendarId) => {
     setSelectedCalendar(
@@ -71,11 +74,12 @@ const CalendarList = () => {
     <ListContainer>
       {calendarList.length > 0 ? (
         calendarList.map((calendar) => (
-          <CheckboxLabel key={calendar.calendarId} bgColor={calendar.calendarColor}>
-            <input
-              type='checkbox'
+          <CheckboxLabel key={calendar.calendarId}>
+            <CheckboxInput
+              $bgColor={calendar.calendarColor}
               checked={selectedCalendar.includes(calendar.calendarId)}
               onChange={() => handleCheckboxChange(calendar.calendarId)}
+              style={{ backgroundColor: calendar.calendarColor }}
             />
             {calendar.calendarName}
           </CheckboxLabel>

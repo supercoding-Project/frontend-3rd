@@ -28,7 +28,7 @@ const NavContainer = styled.div`
   padding-bottom: 20px;
 `;
 
-const NavItem = styled.li`
+const NavItem = styled.div`
   font-size: var(--font-lg);
   display: flex;
   align-items: center;
@@ -87,7 +87,8 @@ const Nav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useContext(AuthContext);
-  const [isToggleOpen, setIsToggleOpen] = useState(false);
+  const [isCalendarToggleOpen, setIsCalendarToggleOpen] = useState(false);
+  const [isMemberToggleOpen, setIsMemberToggleOpen] = useState(false);
 
   const isCalendarPage = location.pathname === '/';
   const isMemberPage = location.pathname === '/members';
@@ -98,8 +99,12 @@ const Nav = () => {
     navigate('/');
   };
 
-  const handleToggle = () => {
-    setIsToggleOpen(!isToggleOpen);
+  const handleCalendarToggle = () => {
+    setIsCalendarToggleOpen(!isCalendarToggleOpen);
+  };
+
+  const handleMemberToggle = () => {
+    setIsMemberToggleOpen(!isMemberToggleOpen);
   };
 
   const handleNavigateToCalendar = () => {
@@ -121,7 +126,7 @@ const Nav = () => {
           <AccordionItem>
             <AccordionItemHeading>
               <AccordionItemButton>
-                <NavItem $active={isCalendarPage} onClick={handleNavigateToCalendar}>
+                <NavItem as='li' $active={isCalendarPage} onClick={handleNavigateToCalendar}>
                   {isCalendarPage ? <BsCalendarFill /> : <BsCalendar4 />}
                   Calendar
                   <BsPlus
@@ -131,31 +136,21 @@ const Nav = () => {
                       handleNavigateToCreateCalendar();
                     }}
                   />
-                  {isToggleOpen ? (
-                    <StyledUpIcon className='icon' onClick={handleToggle} />
+                  {isCalendarToggleOpen ? (
+                    <StyledUpIcon className='icon' onClick={handleCalendarToggle} />
                   ) : (
-                    <StyledDownIcon className='icon' onClick={handleToggle} />
+                    <StyledDownIcon className='icon' onClick={handleCalendarToggle} />
                   )}
                 </NavItem>
               </AccordionItemButton>
             </AccordionItemHeading>
-            {isToggleOpen && (
+            {isCalendarToggleOpen && (
               <AccordionItemPanel>
                 <CalendarList />
               </AccordionItemPanel>
             )}
           </AccordionItem>
         </Accordion>
-        {/* <NavItem $active={isMemberPage} onClick={handleNavigateToMembers}>
-          {isMemberPage ? <BsPeopleFill /> : <BsPeople />}
-          Member
-          {isToggleOpen ? (
-            <BsChevronUp className='plus-icon' onClick={handleToggle} />
-          ) : (
-            <BsChevronDown className='plus-icon' onClick={handleToggle} />
-          )}
-          {isToggleOpen && <MemberList />}
-        </NavItem> */}
         <Accordion>
           <AccordionItem>
             <AccordionItemHeading>
@@ -163,15 +158,15 @@ const Nav = () => {
                 <NavItem $active={isMemberPage} onClick={handleNavigateToMembers}>
                   {isMemberPage ? <BsPeopleFill /> : <BsPeople />}
                   Member
-                  {isToggleOpen ? (
-                    <StyledUpIcon className='icon' onClick={handleToggle} />
+                  {isMemberToggleOpen ? (
+                    <StyledUpIcon className='icon' onClick={handleMemberToggle} />
                   ) : (
-                    <StyledDownIcon className='icon' onClick={handleToggle} />
+                    <StyledDownIcon className='icon' onClick={handleMemberToggle} />
                   )}
                 </NavItem>
               </AccordionItemButton>
             </AccordionItemHeading>
-            {isToggleOpen && (
+            {isMemberToggleOpen && (
               <AccordionItemPanel>
                 <CalendarListForMemberList />
               </AccordionItemPanel>
