@@ -1,165 +1,150 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BsChevronDown, BsChevronRight, BsPlusLg } from 'react-icons/bs';
-import { Link, useNavigate } from 'react-router-dom';
+import { BsChevronDown, BsChevronRight } from 'react-icons/bs';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 
 const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
 
 const ScheduleEdit = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { state } = location;
+
   const [showCalendarDropDown, setShowCalendarDropDown] = useState(false);
   const [calendar, setCalendar] = useState('');
   const [calendarList, setCalendarList] = useState([]);
   const [colorCategory, setColorCategory] = useState('');
   const [title, setTitle] = useState('');
-  const [location, setLocation] = useState('');
+  const [locationInput, setLocationInput] = useState('');
   const [startDate, setStartDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endDate, setEndDate] = useState('');
   const [endTime, setEndTime] = useState('');
   const [memo, setMemo] = useState('');
   const [mentionUserIds, setMentionUserIds] = useState([]);
-  const [repeatType, setRepeatType] = useState('');
+  const [repeatType, setRepeatType] = useState('NONE');
   const [repeatInterval, setRepeatInterval] = useState(0);
   const [repeatEndDate, setRepeatEndDate] = useState('');
   const [userId, setUserId] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [mentionUsers, setMentionUsers] = useState([]); // 멘션 가능한 유저 목록
+  const [showMentionSelect, setShowMentionSelect] = useState(false); // 멘션 유저 선택 UI 표시 여부부
 
-  // 유저 ID 가져오기
   useEffect(() => {
     const fetchUserId = async () => {
       const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
-        return;
-      }
-
+      if (!token) return;
       try {
-        const response = await axios.get(
-          'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        console.log('✅ 유저 정보:', response.data);
-        if (response.data.isSuccess) {
-          setUserId(response.data.data.id); // 유저 ID 설정
-        } else {
-          console.error('❌ 유저 정보를 불러오는데 실패했습니다.');
-        }
+        const response = await axios.get(`${SERVER_URL}/api/v1/mypage`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.isSuccess) setUserId(response.data.data.id);
       } catch (error) {
-        console.error('❌ 유저 정보를 불러오는 중 오류 발생:', error);
+        console.error('유저 정보 오류', error);
       }
     };
-
     fetchUserId();
-  }, []); // 컴포넌트가 마운트될 때 한 번만 실행
+  }, []);
 
-  // 캘린더 목록 불러오기
   useEffect(() => {
     const fetchCalendars = async () => {
       const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
-        return;
-      }
-
+      if (!token) return;
       try {
         const response = await axios.get(`${SERVER_URL}/api/v1/calendars`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        if (response.data.isSuccess) {
-          setCalendarList(response.data.data); // 캘린더 목록 상태 업데이트
-        } else {
-          console.error('❌ 캘린더 목록을 가져오는 데 실패했습니다.');
-        }
+        if (response.data.isSuccess) setCalendarList(response.data.data);
       } catch (error) {
-        console.error('❌ 캘린더 목록 불러오기 실패:', error);
+        console.error('캘린더 목록 오류', error);
       }
     };
-
     fetchCalendars();
-  }, []); // 컴포넌트가 마운트될 때 한 번만 실행
+  }, []);
+
+  useEffect(() => {
+    if (state?.selectedDate) setStartDate(state.selectedDate);
+  }, [state?.selectedDate]);
 
   const handleSaveSchedule = async (e) => {
     e.preventDefault();
 
     const token = localStorage.getItem('access_token');
-    if (!token) {
-      console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
+    if (!token || !userId || !startDate || !startTime || !endDate || !endTime) {
+      alert('모든 필드를 입력해주세요.');
       return;
     }
 
-    if (!userId) {
-      console.error('❌ 유저 ID가 없습니다.');
+    // start < end 검사
+    const start = new Date(`${startDate}T${startTime}`);
+    const end = new Date(`${endDate}T${endTime}`);
+    if (start >= end) {
+      setErrorMsg('시작 시간이 종료 시간보다 같거나 클 수 없습니다.');
       return;
     }
 
-    if (!startDate || !startTime || !endDate || !endTime) {
-      alert('❌ 모든 필드를 입력해주세요');
+    // calendarId 찾기
+    const selectedCalendar = calendarList.find((item) => item.calendarName === calendar);
+    if (!selectedCalendar) {
+      setErrorMsg('캘린더를 선택해주세요.');
       return;
     }
 
-    const startDateTime = new Date(`${startDate}T${startTime}`).toISOString().split('.')[0]; // 밀리초 제거
-    const endDateTime = new Date(`${endDate}T${endTime}`).toISOString().split('.')[0]; // 밀리초 제거
-
-    console.log('✅ 시작 시간:', startDateTime);
-    console.log('✅ 종료 시간:', endDateTime);
-
-    const scheduleData = {
-      createUserId: userId,
-      calendarId: calendarList.find((item) => item.calendarName === calendar)?.calendarId || 1,
-      title,
-      location,
-      startTime: startDateTime,
-      endTime: endDateTime,
-      repeatSchedule: repeatType
-        ? {
-            repeatType,
-            repeatInterval,
-            repeatEndDate,
-          }
-        : null,
-      memo,
-      mentionUserIds: mentionUserIds.length > 0 ? mentionUserIds : [0],
+    const formatDateTime = (date) => {
+      return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
     };
+
+    const repeatSchedule =
+      repeatType === 'NONE'
+        ? { repeatType: 'NONE', repeatInterval: 0, repeatEndDate: null }
+        : {
+            repeatType,
+            repeatInterval: repeatInterval || 0,
+            repeatEndDate: repeatEndDate ? dayjs(repeatEndDate).format('YYYY-MM-DD') : undefined,
+          };
+
+    // 데이터 구성
+    const scheduleData = {
+      title,
+      location: locationInput,
+      startTime: formatDateTime(start),
+      endTime: formatDateTime(end),
+      repeatSchedule,
+      memo,
+      mentionUserIds: mentionUserIds.length > 0 ? mentionUserIds : [],
+    };
+
+    // 입력값 확인 (콘솔에 출력)
+    console.log('입력한 값들:', scheduleData);
 
     try {
       const response = await axios.post(`${SERVER_URL}/api/v1/schedules`, scheduleData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
+      console.log('서버 응답:', response);
       if (response.data.isSuccess) {
-        alert('✅ 일정이 성공적으로 등록되었습니다.');
+        alert('일정이 성공적으로 등록되었습니다.');
         navigate('/');
       } else {
-        alert('❌ 일정 등록 실패');
+        setErrorMsg('일정 등록 실패: 서버 응답 오류');
       }
     } catch (error) {
-      console.error('❌ 일정 등록 실패:', error);
       if (error.response) {
-        alert(`❌ 오류: ${error.response.data}`);
+        console.error('서버 응답:', error.response);
+        setErrorMsg(`등록 실패 - ${error.response.status}: ${error.response.data.message || '서버 오류'}`);
       } else {
-        alert('❌ 네트워크 오류가 발생했습니다.');
+        setErrorMsg('일정 등록 중 오류 발생');
       }
+      console.error(error);
+      console.log(error.response);
     }
-  };
-
-  const handleCancel = () => {
-    navigate('/'); // 취소하면 메인 페이지로 돌아가기
   };
 
   return (
     <div>
       <PrevLink to={-1}>이전으로 돌아가기</PrevLink>
-
       <ScheduleForm onSubmit={handleSaveSchedule}>
         <InputContainer>
           <label>제목</label>
@@ -167,7 +152,7 @@ const ScheduleEdit = () => {
         </InputContainer>
         <InputContainer>
           <label>장소</label>
-          <input type='text' value={location} onChange={(e) => setLocation(e.target.value)} />
+          <input type='text' value={locationInput} onChange={(e) => setLocationInput(e.target.value)} />
         </InputContainer>
         <InputContainer>
           <label>일시</label>
@@ -180,15 +165,27 @@ const ScheduleEdit = () => {
           </DateInput>
         </InputContainer>
         <InputContainer>
-          <label>참석자</label>
-          <input
-            type='text'
-            value={mentionUserIds.join(', ')}
-            onChange={(e) => setMentionUserIds(e.target.value.split(', '))}
-          />
-          <button type='button'>
-            <BsPlusLg />
-          </button>
+          <label>반복 설정</label>
+          <div>
+            <select value={repeatType} onChange={(e) => setRepeatType(e.target.value)}>
+              <option value='NONE'>반복 안함</option>
+              <option value='DAILY'>매일</option>
+              <option value='WEEKLY'>매주</option>
+              <option value='MONTHLY'>매월</option>
+              <option value='YEARLY'>매년</option>
+            </select>
+            {repeatType !== 'NONE' && (
+              <>
+                <input
+                  type='number'
+                  placeholder='반복 간격'
+                  value={repeatInterval}
+                  onChange={(e) => setRepeatInterval(Number(e.target.value))}
+                />
+                <input type='date' value={repeatEndDate} onChange={(e) => setRepeatEndDate(e.target.value)} />
+              </>
+            )}
+          </div>
         </InputContainer>
         <InputContainer>
           <label>캘린더</label>
@@ -226,11 +223,11 @@ const ScheduleEdit = () => {
           </CalendarDropDown>
         </InputContainer>
         <InputContainer>
-          <label>설정</label>
+          <label>설명</label>
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)}></textarea>
         </InputContainer>
         <ButtonContainer>
-          <button type='button' onClick={handleCancel}>
+          <button type='button' onClick={() => navigate('/')}>
             취소
           </button>
           <button type='submit'>저장</button>
@@ -245,7 +242,8 @@ export default ScheduleEdit;
 const PrevLink = styled(Link)`
   text-decoration: none;
   font-size: var(--font-sm);
-  color: black;
+  font-weight: bold;
+  color: var(--color-main-active);
 `;
 
 const ScheduleForm = styled.form`
@@ -341,8 +339,7 @@ const CalendarDropDown = styled.div`
     background: transparent;
     width: 100%;
     border: 1px solid var(--color-border);
-    font-size: var(--font-md);
-    padding: 0 8px;
+    font-size: var(--font-sm);
     cursor: pointer;
     text-align: left;
   }
@@ -363,7 +360,7 @@ const CalendarDropDown = styled.div`
 
   & li {
     padding: 10px 8px;
-    font-size: var(--font-md);
+    font-size: var(--font-sm);
     border-bottom: 1px solid var(--color-border);
     cursor: pointer;
   }
@@ -376,62 +373,6 @@ const CalendarDropDown = styled.div`
   & li:last-child {
     border: none;
   }
-`;
-
-const ColorCategoryDropDown = styled.div`
-  width: 200px;
-  position: relative;
-
-  & button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    border: 1px solid var(--color-border);
-    background: transparent;
-    font-size: var(--font-md);
-    padding: 0 8px;
-    cursor: pointer;
-  }
-
-  & button svg {
-    width: 10px;
-    height: 10px;
-  }
-
-  & ul {
-    width: 500px;
-    padding: 8px;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-    position: absolute;
-    top: 35px;
-    border: 1px solid var(--color-border);
-    background: white;
-    z-index: 1;
-  }
-
-  & li {
-    display: flex;
-    cursor: pointer;
-  }
-
-  & li div:last-child {
-    flex-grow: 1;
-    height: 15px;
-    background: var(--color-bg-primary);
-  }
-
-  & li:hover div:last-child {
-    background: var(--color-bg-hover);
-  }
-`;
-
-const ColorBox = styled.div`
-  background: ${({ $bgColor }) => $bgColor};
-  width: 15px;
-  height: 15px;
 `;
 
 const ButtonContainer = styled.div`

@@ -34,8 +34,8 @@ const Month = () => {
     }
   };
 
-  const handleScheduleEdit = () => {
-    navigate('/schedule-edit');
+  const handleScheduleEdit = (day) => {
+    navigate('/schedule-edit', { state: { selectedDate: format(day, 'yyyy-MM-dd') } });
   };
 
   return (
@@ -62,7 +62,7 @@ const Month = () => {
             key={day}
             $isCurrentDay={isSameDay(day, new Date())}
             $isCurrentMonth={isSameMonth(day, currentDate)}
-            onClick={handleScheduleEdit}
+            onClick={() => handleScheduleEdit(day)}
           >
             <span>{format(day, 'd')}</span>
           </Day>
