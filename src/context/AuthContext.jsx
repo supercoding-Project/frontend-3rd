@@ -1,4 +1,5 @@
-import React, { createContext, useReducer, useEffect } from 'react';
+import React, { createContext, useReducer, useEffect, useContext } from 'react';
+import { useCalendar } from './CalendarContext'; // useCalendar 훅을 통해 CalendarContext 사
 
 // 1. 초기 상태
 const initialState = {
@@ -34,6 +35,8 @@ export const AuthContext = createContext();
 // 4. Provider 컴포넌트
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  //const { dispatch: calendarDispatchFunc } = useContext(CalendarContext); // ✅ useContext로 CalendarContext 사용
+  const { dispatch: calendarDispatch } = useCalendar(); // useCalendar 훅으로 calendarDispatch 가져오기
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -64,23 +67,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     dispatch({ type: 'LOGOUT' });
+    // 캘린더 리스트 초기화
+    calendarDispatch({ type: 'CLEAR_CALENDAR_LIST' });
+    // // calendarDispatchFunc가 존재할 때만 실행
+    // if (calendarDispatchFunc) {
+    //   calendarDispatchFunc({ type: 'CLEAR_CALENDAR_LIST' });
+    // }
   };
 
   const updateUser = (updatedUser) => {
     dispatch({
-      type: 'LOGIN',
-      payload: {
-        user: {
-          ...state.user, // 기존 유저 정보 유지
-          ...updatedUser, // 업데이트된 정보 덮어쓰기
-        },
-        access_token: state.access_token,
-        refresh_token: state.refresh_token,
-      },
+      type: 'UPDATE_USER',
+      payload: updatedUser,
     });
-
-    // localStorage도 업데이트
-    localStorage.setItem('user', JSON.stringify({ ...state.user, ...updatedUser }));
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   return <AuthContext.Provider value={{ ...state, login, logout, updateUser }}>{children}</AuthContext.Provider>;

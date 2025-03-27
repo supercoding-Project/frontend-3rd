@@ -7,28 +7,28 @@ import { useCalendar } from '../../context/CalendarContext';
 
 const Home = () => {
   const [selected, setSelected] = useState('month');
-  const { selectedCalendar, events, fetchEvent } = useCalendar();
+  // const { selectedCalendar, events, fetchEvent } = useCalendar();
 
   // useEffect(() => {
   //   fetchEvent();
   // }, [fetchEvent]);
 
-  const filteredEvents = (events ?? []).filter((event) => (selectedCalendar ?? []).includes(event.calendarId));
+  // const filteredEvents = (events ?? []).filter((event) => (selectedCalendar ?? []).includes(event.calendarId));
 
   const calendar = {
-    month: <Month events={filteredEvents} />,
-    week: <Week events={filteredEvents} />,
-    day: <Day events={filteredEvents} />,
+    month: <Month />,
+    week: <Week />,
+    day: <Day />,
   };
 
   const handleSelectButton = (selectedButton) => {
     setSelected(selectedButton);
   };
 
-  const isSharedCalendar =
-    selectedCalendar &&
-    events &&
-    selectedCalendar.some((id) => events.find((event) => event.calendarId === id)?.calendarType === 'shared');
+  // const isSharedCalendar =
+  //   selectedCalendar &&
+  //   events &&
+  //   selectedCalendar.some((id) => events.find((event) => event.calendarId === id)?.calendarType === 'shared');
 
   return (
     <>
@@ -43,10 +43,9 @@ const Home = () => {
           <button onClick={() => handleSelectButton('day')}>일간</button>
         </TabButton>
       </Tab>
-      <InviteButtonContainer>
-        <InviteButton onClick={() => console.log('초대 기능 구현 예정')}>참석자 초대</InviteButton>
-        <InviteButton onClick={() => console.log('초대 기능 구현 예정')}>할 일 보기</InviteButton>
-      </InviteButtonContainer>
+      <ButtonContainer>
+        <TodoButton onClick={() => console.log('초대 기능 구현 예정')}>할 일 보기</TodoButton>
+      </ButtonContainer>
       {/* 공유 캘린더 선택 시 초대 버튼 표시 */}
       {/* {isSharedCalendar && ( */}
       {/* )} */}
@@ -89,7 +88,7 @@ const TabButton = styled.li`
   }
 `;
 
-const InviteButton = styled.button`
+const TodoButton = styled.button`
   background-color: var(--color-main-active);
   color: white;
   padding: 8px 12px;
@@ -103,7 +102,7 @@ const InviteButton = styled.button`
   }
 `;
 
-const InviteButtonContainer = styled.div`
+const ButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 5px;

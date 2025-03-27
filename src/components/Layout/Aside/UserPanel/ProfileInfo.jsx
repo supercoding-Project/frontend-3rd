@@ -32,13 +32,11 @@ const UserEmail = styled.div`
 
 const ProfileInfo = () => {
   const { user } = useContext(AuthContext);
-  console.log('🟠 사이드바에서 가져온 유저 정보:', user);
 
   // 프로필 이미지 URL을 절대 경로로 변경
   const profileImage = user?.profileImage
     ? `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080${user.profileImage}`
     : userProfileImg;
-  console.log('🟠 프로필사진 url:', profileImage);
 
   //로그인한 유저 정보 가져오기
   return (
