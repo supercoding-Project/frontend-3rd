@@ -7,6 +7,7 @@ import MyPage from './pages/myPage/MyPage';
 import Notifications from './components/Notifications/Notifications';
 import Toast from './components/Notifications/Toast';
 import ChatList from './components/Chat/ChatList';
+import ChatRoom from './components/Chat/ChatRoom';
 import ScheduleEdit from './pages/ScheduleEdit/ScheduleEdit';
 import MemberList from './pages/Members/MemberList';
 import CreateCalendar from './pages/CreateCalendar/CreateCalendar';
@@ -32,6 +33,7 @@ const App = () => {
             <Route path='/members' element={<MemberList />} />
           </Route>
           <Route path='/chat-list' element={<ChatList />} />
+          <Route path='/chat/:roomId' element={<ChatRoom />} />
         </Routes>
       </AuthProvider>
     </CalendarProvider>
