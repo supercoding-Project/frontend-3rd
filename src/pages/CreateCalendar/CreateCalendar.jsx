@@ -5,7 +5,7 @@ import { useCalendar } from '../../context/CalendarContext';
 import styled from 'styled-components';
 
 const CreateCalendar = () => {
-  const { calendarList, setCalendarList } = useCalendar();
+  const { calendarList, dispatch } = useCalendar();
   const [showCalendarDropDown, setShowCalendarDropDown] = useState(false);
   const [showColorCategoryDropDown, setShowColorCategoryDropDown] = useState(false);
   const [colorCategory, setColorCategory] = useState(''); // 선택된 색상 상태
@@ -91,7 +91,7 @@ const CreateCalendar = () => {
       if (response.ok) {
         const data = await response.json();
         alert('캘린더가 생성되었습니다!');
-        setCalendarList([...calendarList, data.data]);
+        dispatch({ type: 'SET_CALENDAR_LIST', payload: [...calendarList, data.data] });
         navigate('/'); // 성공 시 리디렉션
       } else {
         console.error('Error creating calendar');
