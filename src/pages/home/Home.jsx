@@ -4,6 +4,7 @@ import Week from '../../components/Calendar/Week';
 import Day from '../../components/Calendar/Day';
 import styled from 'styled-components';
 import { useCalendar } from '../../context/CalendarContext';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
@@ -12,6 +13,7 @@ const Home = () => {
   const [selected, setSelected] = useState('month');
   const { selectedCalendar, dispatch } = useCalendar();
   const [events, setEvents] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (selectedCalendar.length > 0) {
@@ -46,6 +48,10 @@ const Home = () => {
     setSelected(selectedButton);
   };
 
+  const handleNavToTodo = () => {
+    navigate('/todo');
+  };
+
   return (
     <>
       <Tab>
@@ -60,7 +66,7 @@ const Home = () => {
         </TabButton>
       </Tab>
       <ButtonContainer>
-        <TodoButton onClick={() => console.log('초대 기능 구현 예정')}>할 일 보기</TodoButton>
+        <TodoButton onClick={handleNavToTodo}>할 일 보기</TodoButton>
       </ButtonContainer>
 
       {calendar[selected]}

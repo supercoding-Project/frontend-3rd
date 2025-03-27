@@ -18,7 +18,7 @@ import styled from 'styled-components';
 import axios from 'axios';
 
 const Month = () => {
-  const { selectedCalendar } = useCalendar();
+  const { selectedCalendar, calendarList } = useCalendar();
   const [events, setEvents] = useState([]);
   const [groupedEvents, setGroupedEvents] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -32,26 +32,30 @@ const Month = () => {
 
   useEffect(() => {
     if (selectedCalendar.length > 0) {
-      const calendarId = selectedCalendar[0]; // 첫 번째 캘린더 선택
-      axios
-        .get(
-          `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        )
-        .then((response) => {
-          const fetchedEvents = response.data.data;
-          setEvents(fetchedEvents);
-
-          const grouped = groupEventsByDate(fetchedEvents);
-          setGroupedEvents(grouped);
-        })
-        .catch((error) => {
-          console.error('API 요청 에러:', error);
-        });
+      // 각 캘린더에 대해 일정을 조회
+      selectedCalendar.forEach((calendarId) => {
+        axios
+          .get(
+            `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+              },
+            }
+          )
+          .then((response) => {
+            const fetchedEvents = response.data.data;
+            setEvents((prevEvents) => [...prevEvents, ...fetchedEvents]); // 이전 일정과 합치기
+            const grouped = groupEventsByDate(fetchedEvents);
+            setGroupedEvents((prevGrouped) => ({
+              ...prevGrouped,
+              ...grouped,
+            }));
+          })
+          .catch((error) => {
+            console.error('API 요청 에러:', error);
+          });
+      });
     }
   }, [selectedCalendar, currentDate]);
 
@@ -64,7 +68,15 @@ const Month = () => {
       if (!groupedEvents[date]) {
         groupedEvents[date] = [];
       }
-      groupedEvents[date].push(event);
+      // 캘린더 색을 event에 추가
+      const calendar = calendarList.find((cal) => cal.calendarId === event.calendarId);
+
+      console.log('일정의 캘린더:', calendar);
+
+      groupedEvents[date].push({
+        ...event,
+        calendarColor: calendar ? calendar.calendarColor : 'lightgray', // 기본값 설정
+      });
     });
 
     return groupedEvents;
@@ -85,7 +97,15 @@ const Month = () => {
   // 날짜에 해당하는 일정 표시
   const renderDayEvents = (date) => {
     const eventsForDay = groupedEvents[date] || [];
-    return eventsForDay.map((event) => <EventItem key={event.scheduleId}>{event.title}</EventItem>);
+    return eventsForDay.map((event, index) => (
+      <EventItem
+        key={event.scheduleId}
+        $calendarColor={event.calendarColor}
+        style={{ top: `${index * 20}px`, zIndex: eventsForDay.length - index }}
+      >
+        {event.title}
+      </EventItem>
+    ));
   };
 
   return (
@@ -188,7 +208,7 @@ const Day = styled.div`
   border-bottom: 1px solid var(--color-border);
   background: ${({ $isCurrentDay }) => ($isCurrentDay ? 'rgba(106, 121, 248, 0.1)' : 'transparent')};
   cursor: pointer;
-
+  position: relative; /* 부모의 위치 지정 */
   & span {
     font-size: var(--font-sm);
     padding-left: 5px;
@@ -203,7 +223,7 @@ const EventItem = styled.div`
   right: 5px;
   font-size: var(--font-xs);
   color: var(--color-text-secondary);
-  background-color: rgba(106, 121, 248, 0.2);
+  background-color: ${({ $calendarColor }) => $calendarColor || 'rgba(106, 121, 248, 0.2)'}; /* 캘린더 색 적용 */
   padding: 2px;
   border-radius: 3px;
   text-overflow: ellipsis;
