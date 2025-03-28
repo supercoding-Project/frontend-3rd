@@ -98,7 +98,7 @@ const ChatList = () => {
                       <BsPersonFill />3
                     </div>
                   </div>
-                  <div className='messageBadge'>{room.unreadCount}</div> {/* 안읽은 메시지 개수 */}
+                  <div className='messageBadge'>{room.unreadCount}</div>
                 </div>
                 <div className='rowBottom'>
                   <div className='chatContents'>
