@@ -22,6 +22,7 @@ const Month = () => {
   const [events, setEvents] = useState([]);
   const [groupedEvents, setGroupedEvents] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [calendarColors, setCalendarColors] = useState({});
   const navigate = useNavigate();
 
   const startDate = startOfWeek(startOfMonth(currentDate));
@@ -30,56 +31,84 @@ const Month = () => {
 
   const weeks = ['일', '월', '화', '수', '목', '금', '토'];
 
+  // 📌 캘린더 색상 가져오기
+  useEffect(() => {
+    const fetchCalendarColors = async () => {
+      try {
+        const response = await axios.get(
+          'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars',
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+          }
+        );
+
+        const colors = {};
+        response.data.data.forEach((calendar) => {
+          colors[calendar.calendarId] = calendar.calendarColor;
+        });
+
+        setCalendarColors(colors);
+      } catch (error) {
+        console.error('캘린더 색상 불러오기 실패:', error);
+      }
+    };
+
+    fetchCalendarColors();
+  }, []);
+
   useEffect(() => {
     if (selectedCalendar.length > 0) {
-      // 각 캘린더에 대해 일정을 조회
-      selectedCalendar.forEach((calendarId) => {
-        axios
-          .get(
-            `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-              },
-            }
-          )
-          .then((response) => {
-            const fetchedEvents = response.data.data;
-            setEvents((prevEvents) => [...prevEvents, ...fetchedEvents]); // 이전 일정과 합치기
-            const grouped = groupEventsByDate(fetchedEvents);
-            setGroupedEvents((prevGrouped) => ({
-              ...prevGrouped,
-              ...grouped,
-            }));
-          })
-          .catch((error) => {
-            console.error('API 요청 에러:', error);
+      let allEvents = [];
+
+      const fetchEvents = async () => {
+        try {
+          const eventPromises = selectedCalendar.map((calendarId) =>
+            axios.get(
+              `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                },
+              }
+            )
+          );
+
+          const responses = await Promise.all(eventPromises);
+          responses.forEach((response) => {
+            allEvents = [...allEvents, ...response.data.data];
           });
-      });
+
+          setEvents(allEvents);
+          setGroupedEvents(groupEventsByDate(allEvents));
+        } catch (error) {
+          console.error('일정 가져오기 실패:', error);
+        }
+      };
+
+      fetchEvents();
     }
-  }, [selectedCalendar, currentDate]);
+  }, [selectedCalendar, calendarColors]);
 
   // 이벤트를 날짜별로 그룹화
+
   const groupEventsByDate = (events) => {
-    const groupedEvents = {};
-
+    const grouped = {};
     events.forEach((event) => {
-      const date = event.startTime.split(' ')[0]; // '2025-03-19' 형식으로 날짜만 추출
-      if (!groupedEvents[date]) {
-        groupedEvents[date] = [];
+      const date = event.startTime.split(' ')[0];
+      if (!grouped[date]) {
+        grouped[date] = [];
       }
-      // 캘린더 색을 event에 추가
-      const calendar = calendarList.find((cal) => cal.calendarId === event.calendarId);
 
-      console.log('일정의 캘린더:', calendar);
-
-      groupedEvents[date].push({
+      // 📌 해당 일정의 캘린더 색상 찾아서 적용
+      grouped[date].push({
         ...event,
-        calendarColor: calendar ? calendar.calendarColor : 'lightgray', // 기본값 설정
+        calendarColor: calendarColors[event.calendarId] || 'lightgray',
       });
     });
 
-    return groupedEvents;
+    return grouped;
   };
 
   const handleChangeMonth = (selectedButton) => {
@@ -128,7 +157,7 @@ const Month = () => {
       </WeekContainer>
       <DayContainer>
         {days.map((day) => {
-          const date = format(day, 'yyyy-MM-dd'); // date를 format을 통해 yyyy-MM-dd 형식으로 변환
+          const date = format(day, 'yyyy-MM-dd');
           return (
             <Day
               key={date}
@@ -137,7 +166,18 @@ const Month = () => {
               onClick={() => handleScheduleEdit(day)}
             >
               <span>{format(day, 'd')}</span>
-              {renderDayEvents(date)} {/* 수정된 부분: day를 사용하여 date로 변환하여 넘김 */}
+              {groupedEvents[date]?.map((event, index) => (
+                <EventItem
+                  key={event.scheduleId}
+                  $calendarColor={event.calendarColor}
+                  style={{
+                    top: `${(index + 1) * 22}px`, // index에 따라 top 값 설정
+                    zIndex: groupedEvents[date].length - index, // z-index는 반대로 설정
+                  }}
+                >
+                  {event.title}
+                </EventItem>
+              ))}
             </Day>
           );
         })}
@@ -218,15 +258,13 @@ const Day = styled.div`
 
 const EventItem = styled.div`
   position: absolute;
-  bottom: 5px;
-  left: 5px;
-  right: 5px;
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
   color: var(--color-text-secondary);
-  background-color: ${({ $calendarColor }) => $calendarColor || 'rgba(106, 121, 248, 0.2)'}; /* 캘린더 색 적용 */
-  padding: 2px;
-  border-radius: 3px;
+  background-color: ${({ $calendarColor }) => $calendarColor || 'lightgray'};
+  padding: 5px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  width: 100%;
+  /* height: 22px; */
 `;

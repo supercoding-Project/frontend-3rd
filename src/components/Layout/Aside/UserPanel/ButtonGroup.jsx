@@ -23,13 +23,13 @@ const ButtonGroup = () => {
       <ButtonWithBadge $icon={<BsGearFill />} onClick={() => navigate('/myPage')} />
       <ButtonWithBadge
         $icon={<BsChatRightDotsFill />}
-        $badgeCount={2}
+        $badgeCount={4}
         onClick={() => {
           openChatList();
         }}
       />
       <Link to='/notifications'>
-        <ButtonWithBadge $icon={<BsBellFill />} $badgeCount={5} />
+        <ButtonWithBadge $icon={<BsBellFill />} $badgeCount={2} />
       </Link>
     </ButtonGroupContainer>
   );

@@ -24,8 +24,10 @@ import CalendarList from './Calendar/CalendarList';
 
 const NavContainer = styled.div`
   flex: 1;
-  margin: 20px 40px;
   padding-bottom: 20px;
+  .accodianHeading {
+    margin: 20px 40px 10px;
+  }
 `;
 
 const NavItem = styled.div`
@@ -35,7 +37,6 @@ const NavItem = styled.div`
   color: ${(props) => (props.$active ? 'var(--color-main-active)' : 'var(--color-main-inactive)')};
   cursor: pointer;
   position: relative;
-  margin-bottom: 20px;
   svg {
     margin-right: 15px;
     font-size: var(--font-xxl);
@@ -124,7 +125,7 @@ const Nav = () => {
       <ul>
         <Accordion>
           <AccordionItem>
-            <AccordionItemHeading>
+            <AccordionItemHeading className='accodianHeading'>
               <AccordionItemButton>
                 <NavItem as='li' $active={isCalendarPage} onClick={handleNavigateToCalendar}>
                   {isCalendarPage ? <BsCalendarFill /> : <BsCalendar4 />}
@@ -153,7 +154,7 @@ const Nav = () => {
         </Accordion>
         <Accordion>
           <AccordionItem>
-            <AccordionItemHeading>
+            <AccordionItemHeading className='accodianHeading'>
               <AccordionItemButton>
                 <NavItem $active={isMemberPage} onClick={handleNavigateToMembers}>
                   {isMemberPage ? <BsPeopleFill /> : <BsPeople />}

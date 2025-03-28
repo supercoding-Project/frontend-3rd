@@ -13,23 +13,72 @@ const ChatList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
-        return;
-      }
-      try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/chat/rooms`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setRooms(response.data.data);
-      } catch (error) {
-        console.error('❌ 채팅방 목록 불러오기 실패:', error);
-      }
-    };
     fetchRooms();
   }, []);
+
+  const fetchRooms = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
+      return;
+    }
+    try {
+      const response = await axios.get(`${SERVER_URL}/api/v1/chat/rooms`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // 채팅방 목록 불러오기 성공 후 안읽은 메시지 개수와 최신 메시지 추가
+      const roomsWithUnreadMessages = await Promise.all(
+        response.data.data.map(async (room) => {
+          const unreadResponse = await axios.get(`${SERVER_URL}/api/v1/chat/message/unread/${room.roomId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const lastMessageResponse = await axios.get(
+            `${SERVER_URL}/api/v1/chat/message/load/${room.roomId}?pageNumber=0`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          // 가장 최근 메시지 정보 추출
+          const lastMessage =
+            lastMessageResponse.data.isSuccess && lastMessageResponse.data.data.length > 0
+              ? lastMessageResponse.data.data[0]
+              : { message: '대화 내용 없음', senderName: '알 수 없음', createdAt: '' };
+
+          return {
+            ...room,
+            unreadCount: unreadResponse.data.data || 0,
+            lastMessage,
+          };
+        })
+      );
+
+      setRooms(roomsWithUnreadMessages);
+    } catch (error) {
+      console.error('❌ 채팅방 목록 불러오기 실패:', error);
+    }
+  };
+
+  const handleDeleteRoom = async (roomId) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
+      return;
+    }
+
+    try {
+      await axios.delete(`${SERVER_URL}/api/v1/chat/room/${roomId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setRooms((prevRooms) => prevRooms.filter((room) => room.roomId !== roomId));
+      console.log(`✅ 채팅방 ${roomId} 삭제 완료!`);
+    } catch (error) {
+      console.error(`❌ 채팅방 ${roomId} 삭제 실패:`, error);
+    }
+  };
 
   return (
     <ChatListContainer>
@@ -41,23 +90,29 @@ const ChatList = () => {
         {rooms.length > 0 ? (
           <ul>
             {rooms.map((room) => (
-              <li key={room.roomId} onClick={() => navigate(`/chat/${room.roomId}`)}>
+              <li key={room.roomId}>
                 <div className='rowTop'>
-                  <div className='calendar'>
+                  <div className='calendar' onClick={() => navigate(`/chat/${room.roomId}`)}>
                     <div className='name'>{room.roomName}</div>
                     <div className='member'>
                       <BsPersonFill />3
                     </div>
                   </div>
-                  <div className='messageBadge'>12</div>
+                  <div className='messageBadge'>{room.unreadCount}</div> {/* 안읽은 메시지 개수 */}
                 </div>
                 <div className='rowBottom'>
                   <div className='chatContents'>
-                    <div className='chatUserName'>유저이름</div>
+                    <div className='chatUserName'>{room.lastMessage.senderName}</div>
                     <div className='chatMark'>:</div>
-                    <div className='chatText'>대화내용</div>
+                    <div className='chatText'>{room.lastMessage.message}</div>
                   </div>
-                  <div className='chatTime'>3월 26일</div>
+                  <div className='chatTime'>
+                    {new Date(room.lastMessage.createdAt).toLocaleString('ko-KR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true,
+                    })}
+                  </div>
                 </div>
               </li>
             ))}
@@ -90,6 +145,7 @@ const Header = styled.div`
 `;
 
 const ChatRow = styled.div`
+  cursor: pointer;
   li {
     padding: 10px 15px;
     position: relative;
@@ -163,5 +219,20 @@ const AddButton = styled.button`
   &:hover {
     background-color: var(--color-main-active-light);
     color: var(--color-main-active);
+  }
+`;
+
+const DeleteButton = styled.button`
+  margin-top: 8px;
+  padding: 5px 10px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: darkred;
   }
 `;

@@ -1,79 +1,91 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import NotificationItem from './NotificationItem';
 import { BsCheckLg } from 'react-icons/bs';
 
-const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
-
 const Notifications = () => {
-  const [notifications, setNotifications] = useState([]);
-  const socketRef = useRef(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
-        return;
-      } else {
-        console.log('토큰 확인', token);
-      }
-
-      // WebSocket 연결 설정
-      const ws = new WebSocket(`${SERVER_URL.replace('https', 'ws')}/alarms`);
-
-      // WebSocket 연결 시도
-      ws.onopen = () => {
-        console.log('✅ WebSocket 연결 성공!');
-        // 서버로 JWT 토큰을 전송
-        ws.send(JSON.stringify({ type: 'AUTH', token }));
-      };
-
-      ws.onmessage = (message) => {
-        console.log('🔔 새 알림 수신:', message.data);
-        const alarmDto = JSON.parse(message.data);
-        setNotifications((prevNotifications) => [...prevNotifications, alarmDto]);
-      };
-
-      ws.onerror = (error) => {
-        console.error('❌ WebSocket 오류:', error);
-        if (error instanceof ErrorEvent) {
-          console.log('Error message:', error.message);
-        }
-      };
-
-      ws.onclose = () => {
-        console.log('🚨 WebSocket 연결 끊김');
-      };
-
-      socketRef.current = ws;
-
-      return () => {
-        if (ws) {
-          ws.close();
-        }
-      };
-    };
-
-    fetchData();
-  }, []);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: 'event_added',
+      calendarName: '동아리',
+      eventName: '전야제',
+      location: '슈퍼 코인노래방',
+      members: 7,
+      eventTime: '2025-03-28T15:55:50',
+      read: false,
+    },
+    {
+      id: 2,
+      type: 'event_mentioned',
+      mentionedUser: '김하진',
+      calendarName: '동아리',
+      eventName: '동아리 창립 기념일 MT',
+      location: '제부도, 아침해 뜨는 펜션',
+      members: 31,
+      eventTime: '2025-03-28T14:00:00',
+      read: false,
+    },
+    {
+      id: 3,
+      type: 'event_deleted',
+      calendarName: '회사',
+      eventName: '2025 춘계 워크샵',
+      location: '회사 1층 카페 > 부산 해운대',
+      members: 45,
+      eventTime: '2025-03-28T12:30:00',
+      read: true,
+    },
+    {
+      id: 4,
+      type: 'event_updated',
+      calendarName: '회사',
+      eventName: '점심회식',
+      date: '2025-03-10',
+      time: '11:30',
+      location: '맛있는 뼈해장국',
+      members: 8,
+      eventTime: '2025-03-27T12:00:00',
+      read: true,
+    },
+    {
+      id: 5,
+      type: 'member_added',
+      calendarName: '회사',
+      eventTime: '2025-03-27T11:00:00',
+      read: true,
+    },
+    {
+      id: 6,
+      type: 'event_started',
+      calendarName: '개인',
+      eventName: '미용실 예약',
+      date: '2025-03-03',
+      time: '14:00',
+      location: '슈퍼매직 미용실',
+      members: 5,
+      eventTime: '2025-03-26T14:00:00',
+      read: true,
+    },
+  ]);
+  const allCheckBtn = () => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.map((noti) => (noti.read ? noti : { ...noti, read: true }))
+    );
+  };
 
   return (
     <NotificationsContainer>
       <NotificationsHeader>
         <h1>알림</h1>
-        <button>전체 확인</button>
+        <button onClick={allCheckBtn}>
+          <BsCheckLg />
+          전체 확인
+        </button>
       </NotificationsHeader>
-      {notifications.length > 0 ? (
-        notifications.map((notification) => (
-          <NotificationItem key={notification.id}>{notification.message}</NotificationItem>
-        ))
-      ) : (
-        <p>새로운 알림이 없습니다.</p>
-      )}
+      {notifications.map((noti) => (
+        <NotificationItem key={noti.id} {...noti} />
+      ))}
     </NotificationsContainer>
   );
 };
@@ -92,12 +104,19 @@ const NotificationsHeader = styled.div`
     padding: 20px 0;
   }
   button {
+    display: flex;
+    align-items: center;
     border: 1px solid var(--color-main-active);
     background-color: var(--color-bg-primary);
     color: var(--color-main-active);
     font-weight: bold;
-    padding: 3px 10px;
+    font-size: var(--font-md);
+    padding: 5px 7px;
     margin-right: 20px;
     border-radius: 5px;
+    cursor: pointer;
+    svg {
+      margin-right: 3px;
+    }
   }
 `;

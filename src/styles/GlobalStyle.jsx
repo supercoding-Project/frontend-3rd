@@ -19,6 +19,7 @@ const GlobalStyle = createGlobalStyle`
 --color-bg-hover: #F1F1F1;
 
 --color-main-active: #6A79F8; 
+--color-main-active-hover: #6a78f8e4; 
 --color-main-active-light: #6A79F810; 
 --color-main-inactive: #999999; 
 --color-badge: #FF647C;

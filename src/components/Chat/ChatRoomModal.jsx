@@ -70,21 +70,25 @@ const ChatRoomModal = ({ onClose }) => {
       <ModalContent>
         <h2>채팅방 추가</h2>
         <ul>
-          {calendars.map((calendar) => (
-            <li key={calendar.calendarId}>
-              <div
-                className='addChatList'
-                onClick={() => handleCreateOrJoin(calendar.calendarId, !existingRooms.includes(calendar.calendarId))}
-                disabled={existingRooms.includes(calendar.calendarId)}
-                style={{
-                  fontWeight: existingRooms.includes(calendar.calendarId) ? 'normal' : 'bold',
-                  color: existingRooms.includes(calendar.calendarId) ? '#999' : '#000',
-                }}
-              >
-                {calendar.calendarName}
-              </div>
-            </li>
-          ))}
+          {calendars.length > 0 ? (
+            calendars.map((calendar) => (
+              <li key={calendar.calendarId}>
+                <div
+                  className='addChatList'
+                  onClick={() => handleCreateOrJoin(calendar.calendarId, !existingRooms.includes(calendar.calendarId))}
+                  disabled={existingRooms.includes(calendar.calendarId)}
+                  style={{
+                    fontWeight: existingRooms.includes(calendar.calendarId) ? 'normal' : 'bold',
+                    color: existingRooms.includes(calendar.calendarId) ? '#999' : '#000',
+                  }}
+                >
+                  {calendar.calendarName}
+                </div>
+              </li>
+            ))
+          ) : (
+            <p>채팅방을 생성할 수 있는 공유 캘린더가 없습니다.</p>
+          )}
         </ul>
         <CloseButton onClick={onClose}>닫기</CloseButton>
       </ModalContent>
