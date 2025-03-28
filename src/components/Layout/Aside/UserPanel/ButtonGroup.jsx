@@ -23,7 +23,7 @@ const ButtonGroup = () => {
       <ButtonWithBadge $icon={<BsGearFill />} onClick={() => navigate('/myPage')} />
       <ButtonWithBadge
         $icon={<BsChatRightDotsFill />}
-        $badgeCount={12}
+        $badgeCount={4}
         onClick={() => {
           openChatList();
         }}
