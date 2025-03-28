@@ -74,7 +74,6 @@ const MyInfo = () => {
 
   const handleUpdate = async () => {
     try {
-      console.log('🟢 회원 정보 수정 요청 시작');
       const requestData = {
         name: userInfo.name,
         email: userInfo.email,
@@ -101,10 +100,7 @@ const MyInfo = () => {
         console.log('🔄 업데이트된 유저 정보:', updatedUser);
 
         // 유저 정보 업데이트 (AuthContext의 updateUser 함수 호출)
-        updateUser(updatedUser); // ✅ updateUser로 상태 갱신
-
-        // localStorage에 업데이트된 유저 정보 저장
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        updateUser(updatedUser);
 
         alert('✅ 회원 정보가 수정되었습니다.');
       } else {

@@ -23,7 +23,16 @@ const authReducer = (state, action) => {
     case 'LOGOUT':
       return { ...state, user: null, access_token: null, isAuthenticated: false, refresh_token: null };
     case 'UPDATE_USER':
-      return { ...state, user: { ...state.user, ...action.payload } };
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          username: action.payload.name,
+          email: action.payload.email,
+          phone: action.payload.phone,
+          profileImage: action.payload.userImageUrl,
+        },
+      };
     default:
       return state;
   }

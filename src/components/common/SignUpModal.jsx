@@ -204,10 +204,8 @@ const SignUpModal = ({ setOpenSignupModal }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('선택된 파일:', file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        console.log('변환된 이미지 URL:', reader.result);
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
@@ -266,9 +264,6 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
     console.log(data);
     const formData = new FormData();
-    // formData.append('name', data.name);
-    // formData.append('email', data.email);
-    // formData.append('password', data.password);
     const dto = {
       email: data.email,
       password: data.password,
@@ -276,36 +271,11 @@ const SignUpModal = ({ setOpenSignupModal }) => {
       phone: data.phoneNumber,
     };
 
-    formData.append('dto', JSON.stringify(dto));
+    formData.append('dto', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+
     if (profileImage) {
       formData.append('image', profileImage);
-    } else {
-      // const response = await fetch(DEFAULT_PROFILE_IMAGE);
-      // const blob = await response.blob();
-      formData.append('image', new Blob());
     }
-
-    console.log('formdata내용');
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-    console.log('🚀 JSON.stringify(dto):', JSON.stringify(dto));
-    console.log('🚀 Blob 내용:', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
-    console.log('🚀 Profile Image:', profileImage);
-    console.log('🚀 Default Profile Image:', DEFAULT_PROFILE_IMAGE);
-    // formData.append('data', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
-    // if (!profileImage) {
-    //   const response = await fetch(DEFAULT_PROFILE_IMAGE); // 기본 이미지 URL에서 파일 가져오기
-    //   const blob = await response.blob();
-    //   formData.append('profileImage', blob, 'default-profile.png'); // Blob 추가
-    // } else {
-    //   formData.append('profileImage', profileImage);
-    // }
-    // if (profileImage) {
-    //   formData.append('profileImage', profileImage);
-    // } else {
-    //   formData.append('profileImage', DEFAULT_PROFILE_IMAGE);
-    // }
     try {
       await axios.post('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/signup', formData, {
         headers: {
@@ -329,10 +299,6 @@ const SignUpModal = ({ setOpenSignupModal }) => {
     type: 'password',
     value: false,
   });
-
-  useEffect(() => {
-    console.log('🔍 업데이트된 미리보기 이미지:', previewImage);
-  }, [previewImage]);
 
   return (
     <Overlay onClick={handleCloseModal}>
