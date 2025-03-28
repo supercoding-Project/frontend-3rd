@@ -15,62 +15,82 @@ const ChatRoom = () => {
   const [message, setMessage] = useState('');
   const [client, setClient] = useState(null);
   const [roomName, setRoomName] = useState('');
-  const [isConnected, setIsConnected] = useState(false); // 연결 상태 추적
-  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [isConnected, setIsConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
 
+  // 현재 로그인한 유저 정보 가져오기
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    console.log('✅ WebSocket 연결 시도 중...');
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          console.error('❌ 토큰이 없습니다.');
+          return;
+        }
 
-    if (!token) {
-      console.error('❌ 토큰이 없습니다.');
-      return;
-    }
-
-    const sock = new SockJS(`${SOCKET_URL}?token=${token}`);
-    console.log('✅ SockJS 객체 생성 완료:', sock);
-
-    const stompClient = new Client({
-      webSocketFactory: () => sock,
-      connectHeaders: { Authorization: `Bearer ${token}` },
-      onConnect: () => {
-        console.log('✅ WebSocket 연결 성공!');
-        setIsConnected(true);
-        stompClient.subscribe('/topic/messages', (messageOutput) => {
-          console.log('✅ 메시지 수신:', messageOutput.body);
+        const response = await axios.get(`${SERVER_URL}/api/v1/mypage`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-      },
-      onStompError: (frame) => {
-        console.error('❌ WebSocket 오류 발생:', frame);
-        setIsConnected(false);
-      },
-      onWebSocketError: (error) => {
-        console.error('❌ WebSocket 자체 오류:', error);
-      },
-    });
 
-    console.log('✅ WebSocket 클라이언트 설정 완료:', stompClient);
+        console.log('👤 로그인 유저 정보:', response.data);
 
-    stompClient.activate(); // WebSocket 연결 시도
-    console.log('✅ WebSocket 연결 시도 중...');
-
-    setClient(stompClient);
-
-    return () => {
-      console.log('❌ WebSocket 연결 해제 중...');
-      stompClient.deactivate();
+        if (response.data.isSuccess) {
+          setUserId(response.data.data.id);
+        } else {
+          console.error('❌ 유저 정보 불러오기 실패');
+        }
+      } catch (error) {
+        console.error('❌ 유저 정보 요청 실패:', error);
+      }
     };
+
+    fetchUserInfo();
+  }, []);
+
+  // 메시지 불러오기
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          console.error('❌ 토큰이 없습니다.');
+          return;
+        }
+
+        const response = await axios.get(`${SERVER_URL}/api/v1/chat/message/load/${roomId}?pageNumber=0`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log('📩 받은 메시지:', response.data);
+
+        if (response.data.isSuccess && Array.isArray(response.data.data)) {
+          setMessages(response.data.data);
+
+          // 받은 메시지에서 roomName을 설정
+          if (response.data.data.length > 0) {
+            setRoomName(response.data.data[0].roomName);
+          }
+        } else {
+          console.error('❌ 메시지 데이터가 올바르지 않습니다.');
+        }
+      } catch (error) {
+        console.error('❌ 메시지 불러오기 실패:', error);
+      }
+    };
+
+    fetchMessages();
   }, [roomId]);
 
   const handleSendMessage = () => {
     if (!message.trim()) {
       console.log('❌ 메시지가 비어 있습니다.');
-      return; // 메시지가 비어 있으면 전송 안 함
+      return;
     }
 
     if (!client || !isConnected) {
       console.log('❌ 연결이 없거나 WebSocket이 연결되지 않았습니다.');
-      return; // WebSocket 연결이 없으면 전송 안 함
+      return;
     }
 
     const token = localStorage.getItem('access_token');
@@ -86,7 +106,6 @@ const ChatRoom = () => {
     };
 
     try {
-      // 메시지를 WebSocket을 통해 실시간으로 전송
       client.publish({
         destination: `/app/chat/${roomId}`,
         body: JSON.stringify(newMessage),
@@ -94,11 +113,10 @@ const ChatRoom = () => {
       });
 
       setMessages((prevMessages) => [...prevMessages, newMessage]);
-      setMessage(''); // 메시지 전송 후 입력창 초기화
+      setMessage('');
 
-      // 메시지 저장 요청을 9092로 보내기
       axios
-        .post(`${SOCKET_URL}/api/v1/chat/message`, newMessage, {
+        .post(`${SERVER_URL}/api/v1/chat/message`, newMessage, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -116,48 +134,63 @@ const ChatRoom = () => {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
+  const formatRelativeTime = (sendTime) => {
+    const now = new Date();
+    const notificationDate = new Date(sendTime);
 
-  const handleBack = () => {
-    navigate('/chat-list');
-  };
+    const isToday =
+      now.getFullYear() === notificationDate.getFullYear() &&
+      now.getMonth() === notificationDate.getMonth() &&
+      now.getDate() === notificationDate.getDate();
 
-  const handleInputChange = (e) => {
-    setMessage(e.target.value); // 인풋값을 상태에 반영
-  };
+    const month = notificationDate.getMonth() + 1;
+    const day = notificationDate.getDate();
+    const hours = notificationDate.getHours();
+    const minutes = notificationDate.getMinutes();
 
-  // if (loading) return <div>로딩 중...</div>; // 로딩 중 메시지
+    const formattedTime = `${hours < 12 ? '오전' : '오후'} ${hours % 12 || 12}:${minutes.toString().padStart(2, '0')}`;
+    const formattedDate = `${month}월 ${day}일`;
+
+    return { formattedDate, formattedTime, isToday };
+  };
 
   return (
     <ChatRoomContainer>
       <ChatHeader>
-        <button onClick={handleBack}>{`<`}</button>
+        <button onClick={() => navigate('/chat-list')}>{`<`}</button>
         <h2>{roomName || '채팅방'}</h2>
       </ChatHeader>
 
       <MessageList>
-        {messages.map((msg, index) => (
-          <Message key={index} className={msg.sender === 'me' ? 'my-message' : 'other-message'}>
-            <MessageBubble $isMine={msg.sender === 'me'} data-time={msg.timestamp}>
-              {msg.content}
-            </MessageBubble>
-          </Message>
-        ))}
+        {messages.map((msg, index) => {
+          const isMine = msg.senderId === userId;
+          const { formattedDate, formattedTime, isToday } = formatRelativeTime(msg.createdAt);
+
+          return (
+            <Message key={index} className={isMine ? 'my-message' : 'other-message'}>
+              <div className='sendUserName'>{msg.senderName || '알 수 없음'}</div>
+              <div className='sendMessage'>
+                <MessageBubble $isMine={isMine}>{msg.message}</MessageBubble>
+                <div className='timeContainer'>
+                  <div className='date' style={{ color: isToday ? 'transparent' : '#999' }}>
+                    {formattedDate}
+                  </div>
+                  <div className='time'>{formattedTime}</div>
+                </div>
+              </div>
+            </Message>
+          );
+        })}
       </MessageList>
 
       <InputContainer>
         <input
           type='text'
           value={message}
-          onChange={handleInputChange} // 변경 핸들러 추가
-          onKeyPress={handleKeyPress}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
           placeholder='메시지를 입력하세요'
-          spellCheck={false} // 글자 교정 기능 비활성화
+          spellCheck={false}
         />
         <button onClick={handleSendMessage}>전송</button>
       </InputContainer>
@@ -193,33 +226,50 @@ const MessageList = styled.div`
 `;
 
 const Message = styled.div`
-  display: flex;
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
   &.my-message {
-    justify-content: flex-end;
+    align-items: flex-end;
+    .sendMessage {
+      flex-direction: row-reverse;
+      .timeContainer {
+        margin-right: 5px;
+      }
+    }
+    .sendUserName {
+      display: none;
+    }
   }
   &.other-message {
-    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  .sendUserName {
+    font-size: var(--font-md);
+    margin: 0 0 3px 5px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+  }
+  .sendMessage {
+    display: flex;
+    align-items: center;
+    .timeContainer {
+      display: flex;
+      flex-direction: column;
+      font-size: 10px;
+      color: var(--color-text-disabled);
+      margin-left: 5px;
+    }
   }
 `;
 
 const MessageBubble = styled.div`
-  max-width: 70%;
+  display: inline-block;
   padding: 10px;
-  background-color: ${(props) => (props.isMine ? '#dcf8c6' : '#fff')};
+  background-color: ${(props) => (props.$isMine ? '#dcf8c6' : '#fff')};
   border-radius: 10px;
-  position: relative;
   word-wrap: break-word;
   font-size: 14px;
-
-  &::after {
-    content: attr(data-time);
-    font-size: 10px;
-    position: absolute;
-    bottom: -15px;
-    left: ${(props) => (props.isMine ? 'auto' : '5px')};
-    right: ${(props) => (props.isMine ? '5px' : 'auto')};
-  }
 `;
 
 const InputContainer = styled.div`
@@ -228,7 +278,6 @@ const InputContainer = styled.div`
   position: relative;
   align-items: center;
   input {
-    /* flex: 1; */
     padding: 10px;
     border-radius: 20px;
     border: 1px solid #ccc;

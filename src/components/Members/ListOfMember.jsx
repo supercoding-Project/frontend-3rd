@@ -168,7 +168,7 @@ const ListOfMember = () => {
             <EmailList>
               {emails.map((email) => (
                 <EmailItem key={email}>
-                  <span>{email}</span>
+                  <div>{email}</div>
                   <DeleteButton onClick={() => handleDeleteEmail(email)}>X</DeleteButton>
                 </EmailItem>
               ))}
@@ -179,7 +179,7 @@ const ListOfMember = () => {
 
             <ModalButtons>
               <CancelButton onClick={() => setShowModal(false)}>취소</CancelButton>
-              <InviteButton onClick={handleInvite}>초대</InviteButton>
+              <InviteSubmitButton onClick={handleInvite}>초대</InviteSubmitButton>
             </ModalButtons>
           </ModalContainer>
         </ModalOverlay>
@@ -213,7 +213,7 @@ const InviteButton = styled.button`
   height: 30px;
   background-color: var(--color-main-active);
   color: white;
-  padding: 5px 8px;
+  padding: 5px 10px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -268,75 +268,117 @@ const ModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 `;
 
 const ModalContainer = styled.div`
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease-out;
 `;
 
 const ModalTitle = styled.h3`
-  margin-bottom: 15px;
-  font-size: 20px;
+  margin-bottom: 20px;
+  font-size: 24px;
   color: #333;
+  font-weight: 600;
 `;
 
 const ModalInput = styled.input`
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-`;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  transition: border-color 0.3s;
 
-const AddButton = styled.button`
-  padding: 8px 12px;
-  font-size: 18px;
-  background-color: #ddd;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  margin-top: 5px;
+  &:focus {
+    outline: none;
+    border-color: var(--color-main-active);
+  }
 `;
 
 const EmailList = styled.div`
-  margin-top: 10px;
-  text-align: left;
+  display: flex;
+  flex-direction: column; /* 이메일들을 세로로 나열 */
+  justify-content: flex-start;
+  margin-left: 30px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #444;
 `;
 
 const EmailItem = styled.div`
+  display: block; /* 항목을 블록 형태로 만들어 세로로 나열되게 */
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #444;
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
+  gap: 10px;
 `;
 
 const DeleteButton = styled.button`
-  background-color: #ff4d4d;
+  font-size: small;
+  background-color: #ff4747;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
-  padding: 3px 8px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #ff2a2a;
+  }
+`;
+
+const InviteSubmitButton = styled.button`
+  height: 30px;
+  width: 55px;
+  font-size: small;
+  font-weight: bolder;
+  background-color: var(--color-main-active);
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.01;
+  &:hover {
+    background-color: var(--color-bg-primary);
+    color: black;
+  }
 `;
 
 const ModalButtons = styled.div`
-  margin-top: 20px;
+  margin-top: 30px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 10px;
 `;
 
 const CancelButton = styled.button`
-  background-color: #ccc;
-  padding: 10px;
-  border-radius: 5px;
+  height: 30px;
+  width: 55px;
+  font-size: small;
+  background-color: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 6px;
   cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #e0e0e0;
+  }
 `;

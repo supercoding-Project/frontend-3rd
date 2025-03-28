@@ -5,7 +5,7 @@ import { useCalendar } from '../../context/CalendarContext';
 import styled from 'styled-components';
 
 const CreateCalendar = () => {
-  const { calendarList, setCalendarList } = useCalendar();
+  const { calendarList, dispatch } = useCalendar();
   const [showCalendarDropDown, setShowCalendarDropDown] = useState(false);
   const [showColorCategoryDropDown, setShowColorCategoryDropDown] = useState(false);
   const [colorCategory, setColorCategory] = useState(''); // 선택된 색상 상태
@@ -88,24 +88,15 @@ const CreateCalendar = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Error creating calendar');
+      if (response.ok) {
+        const data = await response.json();
+        alert('캘린더가 생성되었습니다!');
+        dispatch({ type: 'SET_CALENDAR_LIST', payload: [...calendarList, data.data] });
+        navigate('/'); // 성공 시 리디렉션
+      } else {
+        console.error('Error creating calendar');
+        // Error handling: 서버가 에러를 반환하면 여기서 처리
       }
-
-      const data = await response.json();
-      alert('캘린더가 생성되었습니다!');
-
-      // 캘린더 리스트 업데이트
-      setCalendarList((prev) => [...prev, data.data]);
-      console.log(data);
-      console.log(data.data);
-
-      // 공유 캘린더라면 채팅방 생성
-      if (calendar === 'SHARED') {
-        setTimeout(() => createChatRoom(data.data.calendarId), 100); // 비동기 반영을 위해 약간의 딜레이 추가
-      }
-
-      navigate('/'); // 성공 시 리디렉션
     } catch (error) {
       console.error('Error:', error);
     }
