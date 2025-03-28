@@ -16,7 +16,7 @@ const TodoMain = () => {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
 
-    fetch(`${SERVER_URL}/api/v1/todo?view=MONTHLY&date=2025-03-28&calendarId=48`, {
+    fetch(`${SERVER_URL}/api/v1/todo?view=MONTHLY&date=2025-03-28&calendarId=59`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -76,7 +76,7 @@ const TodoMain = () => {
           closeModal={() => setIsEditModalOpen(false)}
           todo={selectedTodo}
           updateTodoList={updateTodoList}
-          calendarId={48} // 캘린더 ID를 필요에 맞게 전달
+          calendarId={59} // 캘린더 ID를 필요에 맞게 전달
         />
       )}
     </Container>
