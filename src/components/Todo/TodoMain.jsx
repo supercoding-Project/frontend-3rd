@@ -1,92 +1,84 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TodoHeader from './TodoHeader';
-import { FaTrash } from 'react-icons/fa';
+import CreateTodoModal from './CreateTodoModal';
+import EditTodoModal from './EditTodoModal'; // EditTodoModal 임포트
+import { MdOutlineModeEdit } from 'react-icons/md';
 
 const TodoMain = () => {
   const [todoList, setTodoList] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태
+  const [selectedTodo, setSelectedTodo] = useState(null); // 선택된 할 일
+
   const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
 
-  // ✅ API에서 할 일 목록 가져오기
   useEffect(() => {
     const token = localStorage.getItem('access_token');
 
-    fetch(
-      'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/todo?view=MONTHLY&date=2025-03-28&calendarId=48',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    fetch(`${SERVER_URL}/api/v1/todo?view=MONTHLY&date=2025-03-28&calendarId=48`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.isSuccess) {
-          setTodoList(data.data); // ✅ 서버 응답 데이터에서 'data' 배열 저장
+          setTodoList(data.data);
         }
       })
       .catch((error) => console.error('Error fetching todos:', error));
   }, []);
 
-  const addTodo = (newTodoContent) => {
-    const token = localStorage.getItem('access_token');
-
-    // 새 할 일이 추가될 때 로그로 확인
-    console.log('Adding new todo:', newTodoContent);
-
-    // API 요청을 통해 새 할 일 추가
-    fetch('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/todo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        calendarId: 48, // 예시로 calendarId 48을 사용, 실제 값은 동적으로 설정
-        todoContent: newTodoContent,
-        todoDate: '2025-03-28', // 예시 날짜, 실제 값에 맞게 수정
-      }),
-    })
-      .then((res) => {
-        console.log('API Response:', res); // 응답 확인
-        return res.json();
-      })
-      .then((data) => {
-        console.log('Data from API:', data); // 데이터 확인
-        if (data.isSuccess) {
-          // 새 할 일이 추가된 경우, todoList에 즉시 추가
-          setTodoList((prevList) => [...prevList, data.data]); // 새 할 일을 리스트에 추가
-        }
-      })
-      .catch((error) => {
-        console.error('Error adding todo:', error);
-      });
+  const addTodo = (newTodo) => {
+    setTodoList((prevList) => [...prevList, newTodo]);
   };
 
-  const toggleComplete = (index) => {
-    setTodoList(todoList.map((todo, i) => (i === index ? { ...todo, completed: !todo.completed } : todo)));
+  const handleEditClick = (todo) => {
+    setSelectedTodo(todo);
+    setIsEditModalOpen(true); // 수정 모달 열기
   };
 
-  const handleDeleteTodo = (index) => {
-    setTodoList(todoList.filter((_, i) => i !== index));
+  const updateTodoList = (updatedTodo, todoIdToDelete) => {
+    if (updatedTodo) {
+      setTodoList((prevTodoList) =>
+        prevTodoList.map((todo) => (todo.todoId === updatedTodo.todoId ? updatedTodo : todo))
+      );
+    }
+    if (todoIdToDelete) {
+      setTodoList((prevList) => prevList.filter((todo) => todo.todoId !== todoIdToDelete));
+    }
+  };
+
+  const handleDeleteTodo = (todoId) => {
+    setTodoList(todoList.filter((todo) => todo.todoId !== todoId));
   };
 
   return (
     <Container>
-      <TodoHeader addTodo={addTodo} />
+      <TodoHeader addTodo={addTodo} openModal={() => setIsModalOpen(true)} />
       <TodoList>
         {todoList.length === 0 ? (
           <NoTodoMessage>등록된 할 일이 없습니다.</NoTodoMessage>
         ) : (
-          todoList.map((todo, index) => (
+          todoList.map((todo) => (
             <TodoItem key={todo.todoId}>
-              <Checkbox type='checkbox' checked={todo.completed} onChange={() => toggleComplete(index)} />
-              <TodoText completed={todo.completed}>{todo.todoContent}</TodoText> {/* todoContent로 텍스트 출력 */}
-              <DeleteIcon onClick={() => handleDeleteTodo(index)} />
+              <Checkbox type='checkbox' checked={todo.completed} onChange={() => toggleComplete(todo)} />
+              <TodoText completed={todo.completed}>{todo.todoContent}</TodoText>
+              <EditIcon onClick={() => handleEditClick(todo)} />
             </TodoItem>
           ))
         )}
       </TodoList>
+      {isModalOpen && <CreateTodoModal closeModal={() => setIsModalOpen(false)} addTodo={addTodo} />}
+      {isEditModalOpen && (
+        <EditTodoModal
+          closeModal={() => setIsEditModalOpen(false)}
+          todo={selectedTodo}
+          updateTodoList={updateTodoList}
+          calendarId={48} // 캘린더 ID를 필요에 맞게 전달
+        />
+      )}
     </Container>
   );
 };
@@ -123,12 +115,12 @@ const TodoText = styled.span`
   color: ${(props) => (props.completed ? '#aaa' : '#333')};
 `;
 
-const DeleteIcon = styled(FaTrash)`
-  color: #ff6666;
+const EditIcon = styled(MdOutlineModeEdit)`
+  color: #4caf50;
   cursor: pointer;
 
   &:hover {
-    color: #cc0000;
+    color: #388e3c;
   }
 `;
 

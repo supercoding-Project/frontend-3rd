@@ -1,3 +1,5 @@
+// STOMP 라이브러리 사용
+
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import NotificationItem from './NotificationItem';
@@ -29,11 +31,11 @@ const Notifications = () => {
 
       console.log('🔄 WebSocket 연결 중...');
 
-      const socket = new SockJS('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/alarms'); // 서버 주소
+      const socket = new SockJS('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/alarms');
       const stompClient = new Client({
         webSocketFactory: () => {
           console.log('🟢 웹소켓 팩토리 실행됨!');
-          return socket; // 기존 SockJS 인스턴스를 사용
+          return socket;
         },
         connectHeaders: {
           Authorization: `Bearer ${token}`, // JWT 토큰 헤더에 추가
@@ -56,7 +58,7 @@ const Notifications = () => {
         },
       });
 
-      stompClient.activate(); // STOMP 클라이언트 활성화
+      stompClient.activate();
       stompClientRef.current = stompClient;
     };
 

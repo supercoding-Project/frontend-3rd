@@ -97,6 +97,7 @@ const CheckboxLabel = styled.label`
   cursor: pointer;
   padding: 5px;
   position: relative;
+  padding: 5px 20px 5px 40px;
 `;
 
 const CheckboxInput = styled.input.attrs(() => ({
