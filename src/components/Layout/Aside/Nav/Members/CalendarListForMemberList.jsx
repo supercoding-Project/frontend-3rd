@@ -10,9 +10,7 @@ const CalendarListForMemberList = () => {
 
   useEffect(() => {
     const fetchMembers = async () => {
-      console.log('fetchMembers called');
       setLoading(true);
-      console.log('Fetching calendars...'); // 네트워크 요청이 시작되는지 확인
       try {
         const response = await axios.get(
           'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars',
@@ -22,9 +20,7 @@ const CalendarListForMemberList = () => {
             },
           }
         );
-        console.log('API 응답:', response.data); // 응답 확인
         if (response.data && response.data.data) {
-          // calendarType이 'SHARED'인 캘린더만 필터링
           const filteredCalendars = response.data.data.filter((calendar) => calendar.calendarType === 'SHARED');
           setCalendarList(filteredCalendars); // 필터링된 캘린더 목록 업데이트
         } else {

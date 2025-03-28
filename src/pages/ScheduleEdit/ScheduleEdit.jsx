@@ -13,6 +13,7 @@ const ScheduleEdit = () => {
   const { state } = location;
 
   const [showCalendarDropDown, setShowCalendarDropDown] = useState(false);
+  const [repeatContentDropDown, setRepeatContentDropDown] = useState(false);
   const [calendar, setCalendar] = useState('');
   const [calendarList, setCalendarList] = useState([]);
   const [colorCategory, setColorCategory] = useState('');
@@ -116,18 +117,12 @@ const ScheduleEdit = () => {
       mentionUserIds: mentionUserIds.length > 0 ? mentionUserIds : [],
     };
 
-    // 선택한 캘린더 ID 추가
     const calendarId = selectedCalendar.calendarId;
 
-    // 입력값 확인 (콘솔에 출력)
-    console.log('입력한 값들:', scheduleData);
-
     try {
-      // calendarId를 URL에 쿼리 파라미터로 추가
       const response = await axios.post(`${SERVER_URL}/api/v1/schedules?calendarId=${calendarId}`, scheduleData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('서버 응답:', response);
       if (response.data.isSuccess) {
         alert('일정이 성공적으로 등록되었습니다.');
         navigate('/');
@@ -141,9 +136,29 @@ const ScheduleEdit = () => {
       } else {
         setErrorMsg('일정 등록 중 오류 발생');
       }
-      console.error(error);
-      console.log(error.response);
     }
+  };
+
+  const getRepeatTypeText = (type) => {
+    switch (type) {
+      case 'NONE':
+        return '반복 안함';
+      case 'DAILY':
+        return '매일';
+      case 'WEEKLY':
+        return '매주';
+      case 'MONTHLY':
+        return '매월';
+      case 'YEARLY':
+        return '매년';
+      default:
+        return type;
+    }
+  };
+
+  const handleRepeatTypeClick = (type) => {
+    setRepeatType(type);
+    setRepeatContentDropDown(false); // 드롭박스를 닫음
   };
 
   return (
@@ -170,26 +185,39 @@ const ScheduleEdit = () => {
         </InputContainer>
         <InputContainer>
           <label>반복 설정</label>
-          <div>
-            <select value={repeatType} onChange={(e) => setRepeatType(e.target.value)}>
-              <option value='NONE'>반복 안함</option>
-              <option value='DAILY'>매일</option>
-              <option value='WEEKLY'>매주</option>
-              <option value='MONTHLY'>매월</option>
-              <option value='YEARLY'>매년</option>
-            </select>
-            {repeatType !== 'NONE' && (
-              <>
-                <input
-                  type='number'
-                  placeholder='반복 간격'
-                  value={repeatInterval}
-                  onChange={(e) => setRepeatInterval(Number(e.target.value))}
-                />
-                <input type='date' value={repeatEndDate} onChange={(e) => setRepeatEndDate(e.target.value)} />
-              </>
+          <RepeatDropDown>
+            <button type='button' onClick={() => setRepeatContentDropDown(!repeatContentDropDown)}>
+              {getRepeatTypeText(repeatType)}
+              {repeatContentDropDown ? <BsChevronDown /> : <BsChevronRight />}
+            </button>
+            {repeatContentDropDown && (
+              <ul>
+                <li onClick={() => handleRepeatTypeClick('NONE')}>반복 안함</li>
+                <li onClick={() => handleRepeatTypeClick('DAILY')}>매일</li>
+                <li onClick={() => handleRepeatTypeClick('WEEKLY')}>매주</li>
+                <li onClick={() => handleRepeatTypeClick('MONTHLY')}>매월</li>
+                <li onClick={() => handleRepeatTypeClick('YEARLY')}>매년</li>
+              </ul>
             )}
-          </div>
+          </RepeatDropDown>
+          {repeatType !== 'NONE' && (
+            <RepeatIntervalContainer>
+              <label>반복 간격</label>
+              <input
+                type='number'
+                min={0}
+                max={1}
+                value={repeatInterval}
+                onChange={(e) => setRepeatInterval(Number(e.target.value))}
+              />
+            </RepeatIntervalContainer>
+          )}
+          {repeatType !== 'NONE' && (
+            <InputContainer>
+              <label>반복 종료일</label>
+              <input type='date' value={repeatEndDate} onChange={(e) => setRepeatEndDate(e.target.value)} />
+            </InputContainer>
+          )}
         </InputContainer>
         <InputContainer>
           <label>캘린더</label>
@@ -226,6 +254,34 @@ const ScheduleEdit = () => {
             )}
           </CalendarDropDown>
         </InputContainer>
+
+        {/* 멘션 유저 선택 (공유 캘린더인 경우에만 표시)
+        {showMentionSelect && (
+          <InputContainer>
+            <label>멘션할 유저</label>
+            <MentionsDropDown>
+              <button type='button' onClick={() => setShowMentionSelect(!showMentionSelect)}>
+                멘션할 유저 {mentionUserIds.length > 0 && `(${mentionUserIds.length})`}
+                {showMentionSelect ? <BsChevronDown /> : <BsChevronRight />}
+              </button>
+              {showMentionSelect && (
+                <ul>
+                  {mentionUsers.map((user) => (
+                    <li
+                      key={user.id}
+                      onClick={() => handleMentionUserChange}
+                      style={{
+                        backgroundColor: mentionUserIds.includes(user.id) ? '#e0e0e0' : 'transparent',
+                      }}
+                    >
+                      {user.username}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </MentionsDropDown>
+          </InputContainer>
+        )} */}
         <InputContainer>
           <label>설명</label>
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)}></textarea>
@@ -269,10 +325,12 @@ const ScheduleForm = styled.form`
 
 const InputContainer = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column; /* 세로로 배치 */
+  gap: 10px; /* 항목 간 간격 */
+  align-items: flex-start; /* 왼쪽 정렬 */
 
   & label {
-    width: 80px;
+    width: 90px;
     font-size: var(--font-md);
     font-weight: 400;
   }
@@ -396,5 +454,118 @@ const ButtonContainer = styled.div`
 
   & button:last-child {
     margin-left: 10px;
+  }
+`;
+
+const RepeatDropDown = styled.div`
+  width: 200px;
+  position: relative;
+
+  & button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    background: transparent;
+    width: 100%;
+    border: 1px solid var(--color-border);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  & button svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  & ul {
+    position: absolute;
+    top: 35px;
+    border: 1px solid var(--color-border);
+    width: 200px;
+    background: white;
+    z-index: 1;
+  }
+
+  & li {
+    padding: 10px 8px;
+    font-size: var(--font-sm);
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+  }
+
+  & li:hover {
+    background: var(--color-bg-hover);
+    font-weight: 400;
+  }
+
+  & li:last-child {
+    border: none;
+  }
+`;
+
+const RepeatIntervalContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+
+  & label {
+    width: 80px;
+    font-size: var(--font-md);
+    font-weight: 400;
+    margin-bottom: 10px;
+  }
+
+  & input {
+    border: 1px solid var(--color-border);
+    width: 100px;
+    height: 30px;
+    padding: 0 8px;
+    outline: none;
+  }
+`;
+
+const MentionsDropDown = styled.div`
+  width: 200px;
+  position: relative;
+
+  & button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    width: 100%;
+    padding: 8px 10px;
+    font-size: var(--font-sm);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  & ul {
+    position: absolute;
+    top: 35px;
+    width: 100%;
+    background: white;
+    border: 1px solid var(--color-border);
+    z-index: 1;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  & li {
+    padding: 8px 10px;
+    font-size: var(--font-sm);
+    cursor: pointer;
+  }
+
+  & li:hover {
+    background: var(--color-bg-hover);
+    font-weight: 400;
+  }
+
+  & li.selected {
+    background-color: #e0e0e0;
   }
 `;
