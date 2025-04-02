@@ -36,7 +36,7 @@ const Month = () => {
     const fetchCalendarColors = async () => {
       try {
         const response = await axios.get(
-          'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars',
+          'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars',
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -66,7 +66,7 @@ const Month = () => {
         try {
           const eventPromises = selectedCalendar.map((calendarId) =>
             axios.get(
-              `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`,
+              `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`,
               {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem('access_token')}`,

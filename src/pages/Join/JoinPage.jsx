@@ -18,7 +18,7 @@ const JoinPage = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/join',
+        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/join',
         { inviteCode },
         {
           headers: {

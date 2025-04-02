@@ -18,7 +18,7 @@ const EditTodoModal = ({ closeModal, todo, updateTodoList, calendarId: propCalen
   const [calendarList, setCalendarList] = useState([]); // 캘린더 리스트 상태 추가
   const [colorCategory, setColorCategory] = useState(''); // 색상 관리 상태 추가
 
-  const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+  const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
   useEffect(() => {
     const fetchCalendars = async () => {

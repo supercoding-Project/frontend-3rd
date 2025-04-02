@@ -4,7 +4,7 @@ import { BsChevronDown, BsChevronRight } from 'react-icons/bs';
 import axios from 'axios';
 
 const CreateTodoModal = ({ closeModal, addTodo }) => {
-  const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+  const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
   const [todoText, setTodoText] = useState('');
   const [calendarId, setCalendarId] = useState(null);

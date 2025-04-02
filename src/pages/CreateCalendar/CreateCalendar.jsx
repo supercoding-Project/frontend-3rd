@@ -76,17 +76,14 @@ const CreateCalendar = () => {
     console.log('보낼 데이터:', dto); // 확인용 로그
 
     try {
-      const response = await fetch(
-        'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/create-calendar',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(dto),
-        }
-      );
+      const response = await fetch('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dto),
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -106,7 +103,7 @@ const CreateCalendar = () => {
   const createChatRoom = async (calendarId) => {
     try {
       const response = await fetch(
-        `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/room/create/${calendarId}`,
+        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/room/create/${calendarId}`,
         {
           method: 'POST',
           headers: {
