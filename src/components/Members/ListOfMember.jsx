@@ -32,7 +32,7 @@ const ListOfMember = () => {
         }
 
         const response = await axios.get(
-          `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarId}/member`,
+          `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarId}/member`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -71,7 +71,7 @@ const ListOfMember = () => {
         : selectedCalendarsForMembers;
 
       const response = await axios.post(
-        `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarId}/send-invite`,
+        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarId}/send-invite`,
         { emailList: filteredEmails }, // 중복 이메일 제외한 리스트로 초대
         {
           headers: {

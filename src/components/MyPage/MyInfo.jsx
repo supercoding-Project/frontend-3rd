@@ -19,7 +19,7 @@ const MyInfo = () => {
     const fetchUserInfo = async () => {
       try {
         const response = await axios.get(
-          'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
+          'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -84,7 +84,7 @@ const MyInfo = () => {
       console.log('📤 보낸 데이터:', requestData);
 
       const response = await axios.put(
-        'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
+        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
         requestData,
         {
           headers: {
@@ -112,7 +112,7 @@ const MyInfo = () => {
     }
   };
 
-  const baseUrl = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+  const baseUrl = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
   return (
     <Container>

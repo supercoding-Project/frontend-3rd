@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import ChatRoomModal from './ChatRoomModal';
 import { BsPersonFill } from 'react-icons/bs';
 
-const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
 const ChatList = () => {
   const [rooms, setRooms] = useState([]);

@@ -36,7 +36,7 @@ const ProfileInfo = () => {
 
   // 프로필 이미지 URL을 절대 경로로 변경
   const profileImage = user?.profileImage
-    ? `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080${user.profileImage}`
+    ? `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080${user.profileImage}`
     : userProfileImg;
 
   //로그인한 유저 정보 가져오기
