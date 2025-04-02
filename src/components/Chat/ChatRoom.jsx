@@ -5,7 +5,7 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import styled from 'styled-components';
 
-const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 const SOCKET_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:9092'; // WebSocket 서버 URL
 
 const ChatRoom = () => {

@@ -11,7 +11,7 @@ const TodoMain = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태
   const [selectedTodo, setSelectedTodo] = useState(null); // 선택된 할 일
 
-  const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+  const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');

@@ -7,7 +7,7 @@ import { useCalendar } from '../../context/CalendarContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080';
+const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
 const Home = () => {
   const [selected, setSelected] = useState('month');
@@ -113,6 +113,7 @@ const TodoButton = styled.button`
   padding: 8px 12px;
   border: none;
   border-radius: 6px;
+  font-size: var(--font-md);
   cursor: pointer;
   transition: 0.01;
   &:hover {
