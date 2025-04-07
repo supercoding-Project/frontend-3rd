@@ -18,14 +18,11 @@ const MyInfo = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get(
-          'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        );
+        const response = await axios.get('/api/v1/mypage', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        });
 
         // 응답 데이터의 구조가 맞는지 확인
         if (response.data && response.data.data) {
@@ -83,16 +80,12 @@ const MyInfo = () => {
 
       console.log('📤 보낸 데이터:', requestData);
 
-      const response = await axios.put(
-        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/mypage',
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await axios.put('/api/v1/mypage', requestData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
       console.log('✅ 서버 응답 데이터:', response.data);
 
       if (response.data.isSuccess && response.data.data) {
