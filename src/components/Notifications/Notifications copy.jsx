@@ -29,7 +29,7 @@ const Notifications = () => {
 
       console.log('🔄 WebSocket 연결 중...');
 
-      const socket = new SockJS('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/alarms');
+      const socket = new SockJS('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/alarms');
       const stompClient = new Client({
         webSocketFactory: () => {
           console.log('🟢 웹소켓 팩토리 실행됨!');

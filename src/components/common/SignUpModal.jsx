@@ -6,182 +6,6 @@ import axios from 'axios';
 
 const DEFAULT_PROFILE_IMAGE = '/Basic-User-Img.png';
 
-const Overlay = styled.div`
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ModalContainer = styled.div`
-  background-color: #fff;
-  width: 480px;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow:
-    0 3px 6px rgba(0, 0, 0, 0.16),
-    0 3px 6px rgba(0, 0, 0, 0.23);
-  position: relative;
-`;
-
-const SignupContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 30px;
-  font-weight: bolder;
-  font-size: 1.8rem;
-`;
-
-const ContentDiv = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  position: relative;
-`;
-
-const EmailContentDiv = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  position: relative;
-  margin-left: 95px;
-  gap: 10px;
-`;
-
-const EmailInputWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-`;
-
-const DupCheckBtn = styled.button`
-  height: 40px;
-  padding: 0 10px;
-  margin-left: 10px;
-  border: none;
-  background-color: var(--color-main-active);
-  color: white;
-  font-size: 0.8rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: 0.3s;
-  &:hover {
-    background-color: var(--color-bg-primary);
-    color: black;
-  }
-`;
-
-const LoginForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-`;
-
-const Input = styled.input`
-  width: 250px;
-  height: 40px;
-  border: 1px solid #ddd;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 16px;
-  transition: 0.1s;
-  &:focus {
-    border: 2px solid var(--color-main-active);
-    outline: none;
-  }
-`;
-
-const SubmitBtn = styled.button`
-  margin-top: 15px;
-  width: 250px;
-  height: 40px;
-  border-radius: 10px;
-  background-color: var(--color-main-active);
-  transition: 0.5ms;
-  color: var(--color-text-secondary);
-  border: none;
-  &:hover {
-    background-color: var(--color-bg-primary);
-    color: black;
-    border: 1px solid lightgray;
-  }
-`;
-
-const Eye = styled(AiFillEye)`
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
-  margin: auto;
-  position: absolute;
-  fill: gray;
-  right: 10px;
-  top: 20px;
-  transform: translateY(-50%);
-`;
-
-const CloseEye = styled(AiFillEyeInvisible)`
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
-  margin: auto;
-  position: absolute;
-  fill: gray;
-  right: 10px;
-  top: 20px;
-  transform: translateY(-50%);
-`;
-
-const ErrorMsg = styled.small`
-  font-size: 12px;
-  margin-top: 5px;
-`;
-
-const ProfileImageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  background: var(--color-bg-secondary);
-  padding: 20px;
-  border-radius: 10px;
-  width: 400px;
-`;
-
-const ProfileImage = styled.img`
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 3px solid var(--color-main-active);
-  object-fit: cover;
-`;
-
-const ImageUploadLabel = styled.label`
-  background: var(--color-main-active);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: 0.3s;
-  text-align: center;
-
-  &:hover {
-    background-color: var(--color-bg-primary);
-    color: black;
-  }
-`;
-
 const SignUpModal = ({ setOpenSignupModal }) => {
   const {
     register,
@@ -236,10 +60,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
   const handleDuplicateCheck = async (email) => {
     try {
-      const res = await axios.post(
-        'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/check-email',
-        { email }
-      );
+      const res = await axios.post('/api/check-email', { email });
       if (res.data.data === '사용 가능한 이메일입니다.') {
         setIsEmailChecked(true);
         setEmailError(null);
@@ -277,7 +98,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
       formData.append('image', profileImage);
     }
     try {
-      await axios.post('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/signup', formData, {
+      await axios.post('/api/signup', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -415,3 +236,181 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 };
 
 export default SignUpModal;
+
+const Overlay = styled.div`
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ModalContainer = styled.div`
+  background-color: #fff;
+  width: 480px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.16),
+    0 3px 6px rgba(0, 0, 0, 0.23);
+  position: relative;
+`;
+
+const SignupContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  font-weight: bolder;
+  font-size: 1.8rem;
+`;
+
+const ContentDiv = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+`;
+
+const EmailContentDiv = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  margin-left: 95px;
+  gap: 10px;
+`;
+
+const EmailInputWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+`;
+
+const DupCheckBtn = styled.button`
+  height: 40px;
+  padding: 0 10px;
+  margin-left: 10px;
+  border: none;
+  background-color: var(--color-main-active);
+  color: white;
+  font-size: 0.8rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  &:hover {
+    background-color: var(--color-bg-primary);
+    color: black;
+  }
+`;
+
+const LoginForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+`;
+
+const Input = styled.input`
+  width: 250px;
+  height: 40px;
+  font-size: var(--font-sm);
+  border: 1px solid #ddd;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  transition: 0.1s;
+  &:focus {
+    border: 2px solid var(--color-main-active);
+    outline: none;
+  }
+`;
+
+const SubmitBtn = styled.button`
+  margin-top: 15px;
+  width: 250px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: var(--font-md);
+  background-color: var(--color-main-active);
+  transition: 0.5ms;
+  color: var(--color-text-secondary);
+  border: none;
+  &:hover {
+    background-color: var(--color-bg-primary);
+    color: black;
+    border: 1px solid lightgray;
+  }
+`;
+
+const Eye = styled(AiFillEye)`
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  position: absolute;
+  fill: gray;
+  right: 10px;
+  top: 20px;
+  transform: translateY(-50%);
+`;
+
+const CloseEye = styled(AiFillEyeInvisible)`
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  position: absolute;
+  fill: gray;
+  right: 10px;
+  top: 20px;
+  transform: translateY(-50%);
+`;
+
+const ErrorMsg = styled.small`
+  font-size: 12px;
+  margin-top: 5px;
+`;
+
+const ProfileImageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  background: var(--color-bg-secondary);
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+`;
+
+const ProfileImage = styled.img`
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--color-main-active);
+  object-fit: cover;
+`;
+
+const ImageUploadLabel = styled.label`
+  background: var(--color-main-active);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  text-align: center;
+
+  &:hover {
+    background-color: var(--color-bg-primary);
+    color: black;
+  }
+`;

@@ -13,7 +13,7 @@ const CalendarList = () => {
   useEffect(() => {
     // 캘린더 목록 가져오기
     axios
-      .get('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars', {
+      .get('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -28,7 +28,7 @@ const CalendarList = () => {
 
     // 채팅방 목록 가져오기
     axios
-      .get('http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/rooms', {
+      .get('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/rooms', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -83,7 +83,7 @@ const CalendarList = () => {
         console.log('삭제할 채팅방 ID:', roomIdToDelete);
 
         await axios.delete(
-          `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/room/${roomIdToDelete}`,
+          `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/room/${roomIdToDelete}`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
           }
@@ -94,7 +94,7 @@ const CalendarList = () => {
 
       // 2️⃣ 채팅방 삭제 후, 캘린더 삭제 요청
       const calendarDeleteResponse = await axios.delete(
-        `http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarToDelete.id}`,
+        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarToDelete.id}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
         }
