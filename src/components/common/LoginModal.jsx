@@ -55,7 +55,7 @@ const LoginModal = ({ setOpenLoginModal }) => {
     // login(userData); // login 함수 호출, 가짜 JWT 토큰 사용
     // setOpenLoginModal(false);
     try {
-      const res = await axios.post('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/login', {
+      const res = await axios.post('/api/login', {
         email: data.email,
         password: data.password,
       });
