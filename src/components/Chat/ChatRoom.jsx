@@ -29,7 +29,7 @@ const ChatRoom = () => {
           return;
         }
 
-        const response = await axios.get(`${SERVER_URL}/api/v1/mypage`, {
+        const response = await axios.get('/api/v1/mypage', {
           headers: { Authorization: `Bearer ${token}` },
         });
 

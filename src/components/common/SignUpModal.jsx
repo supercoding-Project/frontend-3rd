@@ -60,10 +60,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
   const handleDuplicateCheck = async (email) => {
     try {
-      const res = await axios.post(
-        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/check-email',
-        { email }
-      );
+      const res = await axios.post('/api/check-email', { email });
       if (res.data.data === '사용 가능한 이메일입니다.') {
         setIsEmailChecked(true);
         setEmailError(null);
@@ -101,7 +98,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
       formData.append('image', profileImage);
     }
     try {
-      await axios.post('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080', formData, {
+      await axios.post('/api/signup', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
