@@ -74,7 +74,7 @@ const CalendarListForMemberList = () => {
           {/* {selectedCalendarsForMembers.length === 0 && <p>선택된 캘린더가 없습니다.</p>} */}
         </>
       ) : (
-        <p>공유 캘린더가 없습니다.</p> // 캘린더 목록이 없을 때 표시
+        <p>공유 중인 공유 캘린더가 없습니다.</p> // 캘린더 목록이 없을 때 표시
       )}
     </ListContainer>
   );
