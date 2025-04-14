@@ -18,7 +18,9 @@ const MyInfo = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get('/api/v1/mypage', {
+        const apiUrl =
+          import.meta.env.VITE_API_URL || 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+        const response = await axios.get(`${apiUrl}/api/v1/mypage`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           },
@@ -37,10 +39,6 @@ const MyInfo = () => {
         }
       } catch (error) {
         console.error('유저 정보를 불러오는 중 오류 발생:', error);
-        if (error.response) {
-          console.log('🔴 서버 응답 상태 코드:', error.response.status);
-          console.log('🔴 서버 응답 데이터:', error.response.data);
-        }
       }
     };
 
@@ -80,7 +78,9 @@ const MyInfo = () => {
 
       console.log('📤 보낸 데이터:', requestData);
 
-      const response = await axios.put('/api/v1/mypage', requestData, {
+      const apiUrl =
+        import.meta.env.VITE_API_URL || 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+      const response = await axios.put(`${apiUrl}/api/v1/mypage`, requestData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json',
@@ -112,7 +112,8 @@ const MyInfo = () => {
       <Title>회원 정보 수정</Title>
       <ProfileSection>
         <ProfileImage
-          src={userInfo.profileImage ? userInfo.profileImage : `${baseUrl}${userInfo.profileImage}`}
+          //src={userInfo.profileImage ? userInfo.profileImage : `${baseUrl}${userInfo.profileImage}`} //고쳐야함
+          src={`${baseUrl}${userInfo.profileImage}`} //고쳐야함
           alt='profile'
         />
         <UploadButton htmlFor='profileUpload'>프로필 이미지 변경</UploadButton>
