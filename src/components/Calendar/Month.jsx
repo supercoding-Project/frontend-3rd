@@ -35,9 +35,10 @@ const Month = () => {
   useEffect(() => {
     const fetchCalendarColors = async () => {
       try {
-        const apiUrl =
-          import.meta.env.VITE_API_URL || 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
-        const response = await axios.get(`${apiUrl}/api/v1/calendars`, {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
+        const response = await axios.get(`${baseUrl}/v1/calendars`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           },
