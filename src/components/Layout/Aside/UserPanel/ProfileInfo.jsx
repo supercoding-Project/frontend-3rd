@@ -8,8 +8,8 @@ const ProfileInfo = () => {
 
   // 프로필 이미지 URL을 절대 경로로 변경
   const profileImage = user?.profileImage
-    ? `/uploads${user.profileImage}` // user.profileImage는 "/profiles/xxx.jpg" 형태
-    : '/uploads/profiles/base.png'; // 기본 이미지도 EC2에서 받는 걸로
+    ? user.profileImage // 이미 `/uploads/...` 형태로 들어있음
+    : '/uploads/profiles/base.png'; // 기본 이미지도 같은 경로 기준
 
   //로그인한 유저 정보 가져오기
   return (

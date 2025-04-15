@@ -60,9 +60,9 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
   const handleDuplicateCheck = async (email) => {
     try {
-      const apiUrl =
-        import.meta.env.VITE_API_URL || 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
-      const res = await axios.post(`${apiUrl}/api/check-email`, { email });
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+      const res = await axios.post(`${baseUrl}/check-email`, { email });
       if (res.data.data === '사용 가능한 이메일입니다.') {
         setIsEmailChecked(true);
         setEmailError(null);
@@ -100,9 +100,9 @@ const SignUpModal = ({ setOpenSignupModal }) => {
       formData.append('image', profileImage);
     }
     try {
-      const apiUrl =
-        import.meta.env.VITE_API_URL || 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
-      await axios.post(`${apiUrl}/api/signup`, formData, {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+      await axios.post(`${baseUrl}/signup`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
