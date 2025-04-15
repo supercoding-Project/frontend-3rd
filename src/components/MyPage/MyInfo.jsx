@@ -103,17 +103,18 @@ const MyInfo = () => {
     }
   };
 
-  const baseUrl = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
-
   return (
     <Container>
       <Title>회원 정보 수정</Title>
       <ProfileSection>
         <ProfileImage
-          //src={userInfo.profileImage ? userInfo.profileImage : `${baseUrl}${userInfo.profileImage}`} //고쳐야함
-          src={`${baseUrl}${userInfo.profileImage}`} //고쳐야함
-          alt='profile'
+          src={
+            userInfo.profileImage?.startsWith('/uploads') || userInfo.profileImage?.startsWith('data:image')
+              ? userInfo.profileImage
+              : userProfileImg
+          }
         />
+
         <UploadButton htmlFor='profileUpload'>프로필 이미지 변경</UploadButton>
         <input
           id='profileUpload'
