@@ -92,7 +92,7 @@ const NotificationItem = ({ type, eventName, location, members, mentionedUser, c
   const formattedTime = eventDate.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
 
   return (
-    <Notification read={read}>
+    <Notification $read={read}>
       <NotificationIcon>{iconMap[type]}</NotificationIcon>
       <NotificationInner>
         <NotificationTitle>{messageMap[type]}</NotificationTitle>
@@ -131,7 +131,7 @@ const Notification = styled.div`
   padding: 20px 10px;
   border-bottom: 1px solid var(--color-border);
   position: relative;
-  background-color: ${({ read }) => (read ? 'transparent' : '#f9f9f9')};
+  background-color: ${({ $read }) => ($read ? 'transparent' : '#f9f9f9')};
 `;
 
 const NotificationIcon = styled.div`
