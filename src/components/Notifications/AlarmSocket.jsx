@@ -1,9 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import io from 'socket.io-client';
 
 const useAlarmSocket = (onAlarm) => {
-  const socketRef = useRef(null);
-
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
@@ -16,20 +14,21 @@ const useAlarmSocket = (onAlarm) => {
     socket.on('connect', () => console.log('✅ 알림 소켓 연결됨'));
     socket.on('disconnect', () => console.log('❌ 알림 소켓 끊김'));
     socket.on('connect_error', (e) => console.error('❗연결 오류:', e.message));
+
+    // 알림 수신
     socket.on('sendAlarm', (data) => {
       console.log('🔔 알림 수신:', data);
-      if (onAlarm) onAlarm(data);
+      if (onAlarm) onAlarm(data); // 받은 알림 데이터를 처리
     });
 
-    socketRef.current = socket;
-
+    // 정리 작업
     return () => {
       socket.disconnect();
       console.log('🔌 알림 소켓 종료');
     };
   }, [onAlarm]);
 
-  return socketRef;
+  return;
 };
 
 export default useAlarmSocket;
