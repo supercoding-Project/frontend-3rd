@@ -4,7 +4,7 @@ import Layout from './components/Layout/Layout';
 import Home from './pages/home/Home';
 import { AuthProvider } from './context/AuthContext';
 import MyPage from './pages/myPage/MyPage';
-import Notifications from './components/Notifications/Notifications';
+import Notifications from './components/Notifications/Notifications copy';
 import Toast from './components/Notifications/Toast';
 import ChatList from './components/Chat/ChatList';
 import ChatRoom from './components/Chat/ChatRoom';
