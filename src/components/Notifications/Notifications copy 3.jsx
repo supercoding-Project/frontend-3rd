@@ -9,16 +9,18 @@ const Notifications = () => {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    console.log('Socket.IO 연결 중...');
+    console.log('🚀 Socket.IO 연결 시도...');
     const token = localStorage.getItem('access_token');
-    console.log(token);
+    console.log('🔐 토큰:', token);
+
     if (!token) {
-      console.error('유효한 토큰이 없습니다. 다시 로그인해 주세요.');
+      console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
       return;
     }
 
-    const socket = io('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:9093', {
-      query: { token },
+    // 소켓 연결
+    const socket = io('ws://localhost:9093', {
+      query: { token }, // 서버가 query로 token 받도록 설정되어 있어야 함
       transports: ['websocket'],
     });
 
@@ -27,23 +29,24 @@ const Notifications = () => {
     });
 
     socket.on('disconnect', () => {
-      console.log('🔌 연결이 종료되었습니다.');
+      console.log('❌ 소켓 연결 끊김');
     });
 
     socket.on('sendAlarm', (data) => {
-      console.log('📩 새로운 알림 수신:', data);
+      console.log('🔔 알림 수신:', data);
       setNotifications((prev) => [...prev, data]);
     });
 
     socket.on('connect_error', (error) => {
-      console.error('❌ 연결 오류 발생:', error.message);
+      console.error('⚠️ 연결 오류:', error.message);
     });
 
     socketRef.current = socket;
 
+    // 클린업 함수
     return () => {
       if (socketRef.current) {
-        console.log('🔌 소켓 연결 해제');
+        console.log('🛑 소켓 연결 해제');
         socketRef.current.disconnect();
       }
     };
