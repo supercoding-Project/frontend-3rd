@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import styled from 'styled-components';
 import NotificationItem from './NotificationItem';
 import { BsCheckLg } from 'react-icons/bs';
@@ -18,51 +17,35 @@ const Notifications = () => {
       return;
     }
 
-    axios
-      .get('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/unread', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        if (res.data.isSuccess && res.data.data) {
-          console.log('🗂️ 읽지 않은 알림:', res.data.data);
-          setNotifications(res.data.data);
-        } else {
-          console.warn('🚫 알림 불러오기 실패', res.data.errorCode);
-        }
-      })
-      .catch((err) => {
-        console.error('📡 알림 불러오기 에러:', err);
-      });
-
     const socket = io('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:9093', {
       query: { token },
       transports: ['websocket'],
     });
 
     socket.on('connect', () => {
-      console.log('✅ 알림 소켓 연결됨');
+      console.log('✅ Socket.IO 연결 성공!');
     });
 
     socket.on('disconnect', () => {
-      console.log('🔌 소켓 연결 해제됨');
-    });
-
-    socket.on('connect_error', (e) => {
-      console.error('❗ 소켓 연결 오류:', e.message);
+      console.log('🔌 연결이 종료되었습니다.');
     });
 
     socket.on('sendAlarm', (data) => {
-      console.log('📩 실시간 알림 수신:', data);
+      console.log('📩 새로운 알림 수신:', data);
       setNotifications((prev) => [...prev, data]);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('❌ 연결 오류 발생:', error.message);
     });
 
     socketRef.current = socket;
 
     return () => {
-      socket.disconnect();
-      console.log('🔌 알림 소켓 종료');
+      if (socketRef.current) {
+        console.log('🔌 소켓 연결 해제');
+        socketRef.current.disconnect();
+      }
     };
   }, []);
 
