@@ -60,7 +60,9 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
   const handleDuplicateCheck = async (email) => {
     try {
-      const res = await axios.post('/api/check-email', { email });
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+      const res = await axios.post(`${baseUrl}/check-email`, { email });
       if (res.data.data === '사용 가능한 이메일입니다.') {
         setIsEmailChecked(true);
         setEmailError(null);
@@ -98,7 +100,9 @@ const SignUpModal = ({ setOpenSignupModal }) => {
       formData.append('image', profileImage);
     }
     try {
-      await axios.post('/api/signup', formData, {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+      await axios.post(`${baseUrl}/signup`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -141,7 +145,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
                 required: '🚨이름은 필수 입력입니다.',
               })}
             />
-            {errors.name && <ErrorMsg role='alert'>{errors.name.message}</ErrorMsg>}
+            {isSubmitted && errors.name && <ErrorMsg role='alert'>{errors.name.message}</ErrorMsg>}
           </ContentDiv>
           <ContentDiv>
             <Input
@@ -165,7 +169,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
                 },
               })}
             />
-            {errors.phoneNumber && <ErrorMsg role='alert'>{errors.phoneNumber.message}</ErrorMsg>}
+            {isSubmitted && errors.phoneNumber && <ErrorMsg role='alert'>{errors.phoneNumber.message}</ErrorMsg>}
           </ContentDiv>
           <EmailContentDiv>
             <EmailInputWrapper>
@@ -184,7 +188,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
               />
               <DupCheckBtn onClick={() => handleDuplicateCheck(watch('email'))}>중복 확인</DupCheckBtn>
             </EmailInputWrapper>
-            {errors.email && <ErrorMsg role='alert'>{errors.email.message}</ErrorMsg>}
+            {isSubmitted && errors.email && <ErrorMsg role='alert'>{errors.email.message}</ErrorMsg>}
           </EmailContentDiv>
           <ContentDiv>
             <Input
@@ -201,7 +205,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
               })}
             />
             {!pwCheck.value ? <Eye onClick={handlePwCheck} /> : <CloseEye onClick={handlePwCheck} />}
-            {errors.password && <ErrorMsg role='alert'>{errors.password.message}</ErrorMsg>}
+            {isSubmitted && errors.password && <ErrorMsg role='alert'>{errors.password.message}</ErrorMsg>}
           </ContentDiv>
           <ContentDiv>
             <Input
@@ -223,7 +227,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
             ) : (
               <CloseEye onClick={handleConfirmPwCheck} />
             )}
-            {errors.passwordCheck && <ErrorMsg role='alert'>{errors.passwordCheck.message}</ErrorMsg>}
+            {isSubmitted && errors.passwordCheck && <ErrorMsg role='alert'>{errors.passwordCheck.message}</ErrorMsg>}
           </ContentDiv>
 
           <SubmitBtn type='submit' disabled={isSubmitting}>

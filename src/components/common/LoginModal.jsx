@@ -55,12 +55,12 @@ const LoginModal = ({ setOpenLoginModal }) => {
     // login(userData); // login 함수 호출, 가짜 JWT 토큰 사용
     // setOpenLoginModal(false);
     try {
-      const res = await axios.post('/api/login', {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+      const res = await axios.post(`${baseUrl}/login`, {
         email: data.email,
         password: data.password,
       });
-
-      console.log(res);
 
       const { isSuccess, data: responseData } = res.data;
 
