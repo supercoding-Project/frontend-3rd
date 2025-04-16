@@ -1,184 +1,160 @@
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
 import styled from 'styled-components';
 
 const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
-const SOCKET_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:9092'; // WebSocket 서버 URL
+const SOCKET_SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:9092';
 
 const ChatRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const socketRef = useRef(null);
+
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
-  const [client, setClient] = useState(null);
   const [roomName, setRoomName] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
 
-  // 현재 로그인한 유저 정보 가져오기
   useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('❌ 토큰이 없습니다.');
+      return;
+    }
+
     const fetchUserInfo = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          console.error('❌ 토큰이 없습니다.');
-          return;
-        }
-
-        const response = await axios.get('/api/v1/mypage', {
+        const response = await axios.get(`${SERVER_URL}/api/v1/mypage`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        console.log('👤 로그인 유저 정보:', response.data);
-
         if (response.data.isSuccess) {
           setUserId(response.data.data.id);
-        } else {
-          console.error('❌ 유저 정보 불러오기 실패');
         }
       } catch (error) {
         console.error('❌ 유저 정보 요청 실패:', error);
       }
     };
 
-    fetchUserInfo();
-  }, []);
-
-  // 메시지 불러오기
-  useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchChatData = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          console.error('❌ 토큰이 없습니다.');
-          return;
-        }
-
-        const response = await axios.get(`${SERVER_URL}/api/v1/chat/message/load/${roomId}?pageNumber=0`, {
+        const res = await axios.get(`${SERVER_URL}/api/v1/chat/message/load/${roomId}?pageNumber=0`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        console.log('📩 받은 메시지:', response.data);
-
-        if (response.data.isSuccess && Array.isArray(response.data.data)) {
-          setMessages(response.data.data);
-
-          // 받은 메시지에서 roomName을 설정
-          if (response.data.data.length > 0) {
-            setRoomName(response.data.data[0].roomName);
-          }
-        } else {
-          console.error('❌ 메시지 데이터가 올바르지 않습니다.');
+        if (res.data.isSuccess) {
+          setMessages(res.data.data);
         }
       } catch (error) {
-        console.error('❌ 메시지 불러오기 실패:', error);
+        console.error('❌ 채팅 데이터 불러오기 오류:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchMessages();
+    const fetchRoomName = async () => {
+      try {
+        const res = await axios.get(`${SERVER_URL}/api/v1/chat/room/${roomId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.data.isSuccess) {
+          console.log('✅ roomName:', res.data.data.roomName);
+          setRoomName(res.data.data.roomName || '채팅방');
+        }
+      } catch (error) {
+        console.error('❌ 채팅방 정보 요청 실패:', error);
+      }
+    };
+
+    fetchUserInfo();
+    fetchChatData();
+    fetchRoomName();
   }, [roomId]);
 
-  const handleSendMessage = () => {
-    if (!message.trim()) {
-      console.log('❌ 메시지가 비어 있습니다.');
-      return;
-    }
-
-    if (!client || !isConnected) {
-      console.log('❌ 연결이 없거나 WebSocket이 연결되지 않았습니다.');
-      return;
-    }
+  useEffect(() => {
+    if (!userId) return;
 
     const token = localStorage.getItem('access_token');
-    if (!token) {
-      console.log('❌ 토큰이 없습니다.');
-      return;
-    }
+    const socket = io(SOCKET_SERVER_URL, {
+      auth: { token },
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setIsConnected(true);
+      socket.emit('joinRoom', { userId, roomId });
+    });
+
+    socket.on('message', (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    socket.on('disconnect', () => {
+      setIsConnected(false);
+    });
+
+    return () => {
+      socket.emit('leaveRoom', roomId);
+      socket.disconnect();
+    };
+  }, [roomId, userId]);
+
+  const handleSendMessage = () => {
+    if (!message.trim() || !isConnected || !userId) return;
+
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
 
     const newMessage = {
       content: message,
-      sender: 'me',
+      roomId,
       timestamp: new Date().toISOString(),
+      sender: userId,
     };
 
-    try {
-      client.publish({
-        destination: `/app/chat/${roomId}`,
-        body: JSON.stringify(newMessage),
+    socketRef.current.emit('message', newMessage);
+    setMessages((prevMessages) => [...prevMessages, { ...newMessage, sender: 'me' }]);
+    setMessage('');
+
+    axios
+      .post(`${SERVER_URL}/api/v1/chat/message`, newMessage, {
         headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        if (!res.data.isSuccess) {
+          console.error('❌ 메시지 저장 실패');
+        }
+      })
+      .catch((error) => {
+        console.error('❌ 메시지 저장 요청 실패:', error);
       });
-
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-      setMessage('');
-
-      axios
-        .post(`${SERVER_URL}/api/v1/chat/message`, newMessage, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((response) => {
-          if (response.data.isSuccess) {
-            console.log('✅ 메시지가 저장되었습니다.');
-          } else {
-            console.error('❌ 메시지 저장 실패');
-          }
-        })
-        .catch((error) => {
-          console.error('❌ 메시지 저장 요청 실패:', error);
-        });
-    } catch (error) {
-      console.error('❌ 메시지 전송 실패:', error);
-    }
   };
 
-  const formatRelativeTime = (sendTime) => {
-    const now = new Date();
-    const notificationDate = new Date(sendTime);
-
-    const isToday =
-      now.getFullYear() === notificationDate.getFullYear() &&
-      now.getMonth() === notificationDate.getMonth() &&
-      now.getDate() === notificationDate.getDate();
-
-    const month = notificationDate.getMonth() + 1;
-    const day = notificationDate.getDate();
-    const hours = notificationDate.getHours();
-    const minutes = notificationDate.getMinutes();
-
-    const formattedTime = `${hours < 12 ? '오전' : '오후'} ${hours % 12 || 12}:${minutes.toString().padStart(2, '0')}`;
-    const formattedDate = `${month}월 ${day}일`;
-
-    return { formattedDate, formattedTime, isToday };
+  const formatTime = (time) => {
+    return new Date(time).toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <ChatRoomContainer>
       <ChatHeader>
         <button onClick={() => navigate('/chat-list')}>{`<`}</button>
-        <h2>{roomName || '채팅방'}</h2>
+        <h2>{roomName}</h2>
       </ChatHeader>
 
       <MessageList>
-        {messages.map((msg, index) => {
-          const isMine = msg.senderId === userId;
-          const { formattedDate, formattedTime, isToday } = formatRelativeTime(msg.createdAt);
-
-          return (
-            <Message key={index} className={isMine ? 'my-message' : 'other-message'}>
-              <div className='sendUserName'>{msg.senderName || '알 수 없음'}</div>
-              <div className='sendMessage'>
-                <MessageBubble $isMine={isMine}>{msg.message}</MessageBubble>
-                <div className='timeContainer'>
-                  <div className='date' style={{ color: isToday ? 'transparent' : '#999' }}>
-                    {formattedDate}
-                  </div>
-                  <div className='time'>{formattedTime}</div>
-                </div>
-              </div>
-            </Message>
-          );
-        })}
+        {messages.map((msg, index) => (
+          <Message key={index} className={msg.sender === 'me' ? 'my-message' : 'other-message'}>
+            <MessageBubble $isMine={msg.sender === 'me'} data-time={formatTime(msg.timestamp)}>
+              {msg.content}
+            </MessageBubble>
+          </Message>
+        ))}
       </MessageList>
 
       <InputContainer>
@@ -186,9 +162,13 @@ const ChatRoom = () => {
           type='text'
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSendMessage();
+            }
+          }}
           placeholder='메시지를 입력하세요'
-          spellCheck={false}
         />
         <button onClick={handleSendMessage}>전송</button>
       </InputContainer>

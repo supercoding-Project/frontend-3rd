@@ -1,3 +1,5 @@
+// 웹소켓 연결버전
+
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import NotificationItem from './NotificationItem';
