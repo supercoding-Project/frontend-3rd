@@ -66,18 +66,58 @@ const Notifications = () => {
     };
   }, []);
 
+  const markAllAsRead = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    try {
+      const updated = await Promise.all(
+        notifications.map(async (alarm) => {
+          try {
+            const res = await axios.patch(
+              `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/${alarm.id}?alarmType=${alarm.type}`,
+              {},
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (res.data.isSuccess) {
+              return { ...alarm, read: true };
+            } else {
+              console.warn('알림 확인 실패:', alarm.id);
+              return alarm;
+            }
+          } catch (error) {
+            console.error('알림 업데이트 에러:', alarm.id, error);
+            return alarm;
+          }
+        })
+      );
+
+      setNotifications(updated); // 상태 업데이트
+    } catch (e) {
+      console.error('전체 알림 확인 중 오류 발생:', e);
+    }
+  };
+
   return (
     <NotificationsContainer>
       <NotificationsHeader>
         <h1>알림</h1>
-        <button>
+        <button onClick={markAllAsRead}>
           <BsCheckLg />
           전체 확인
         </button>
       </NotificationsHeader>
-      {notifications.map((notification) => (
-        <NotificationItem key={notification.id} {...notification} />
-      ))}
+      {notifications
+        .slice()
+        .reverse()
+        .map((notification) => (
+          <NotificationItem key={notification.id} {...notification} />
+        ))}
     </NotificationsContainer>
   );
 };

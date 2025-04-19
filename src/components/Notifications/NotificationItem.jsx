@@ -128,10 +128,11 @@ export default NotificationItem;
 const Notification = styled.div`
   display: flex;
   align-items: center;
-  padding: 20px 10px;
+  padding: 20px 30px;
   border-bottom: 1px solid var(--color-border);
   position: relative;
   background-color: ${({ $read }) => ($read ? 'transparent' : '#f9f9f9')};
+  margin: 0 -20px;
 `;
 
 const NotificationIcon = styled.div`
@@ -185,7 +186,7 @@ const NotificationDetails = styled.div`
 
 const NotificationTime = styled.div`
   position: absolute;
-  right: 30px;
+  right: 40px;
   top: 20px;
   font-size: var(--font-md);
   color: var(--color-text-disabled);
