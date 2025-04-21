@@ -36,7 +36,7 @@ const formatRelativeTime = (notificationTime) => {
   return `${month.toString().padStart(2, '0')}월 ${day.toString().padStart(2, '0')}일`;
 };
 
-const NotificationItem = ({ type, eventName, location, members, mentionedUser, calendarName, eventTime, read }) => {
+const NotificationItem = ({ alarmId, type, eventName, location, members, mentionedUser, calendarName, eventTime, read, onClick}) => {
   const messageMap = {
     event_added: (
       <>
@@ -92,15 +92,11 @@ const NotificationItem = ({ type, eventName, location, members, mentionedUser, c
   const formattedTime = eventDate.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
 
   return (
-    <Notification read={read}>
+    <Notification $read={read} onClick={() => onClick(alarmId, type)}> 
       <NotificationIcon>{iconMap[type]}</NotificationIcon>
       <NotificationInner>
         <NotificationTitle>{messageMap[type]}</NotificationTitle>
-        {type !== 'member_added' && type !== 'personal_event_started' && (
           <NotificationDetails>
-            {/* <div className='row'>
-              <span className='highlight'>{eventName}</span>
-            </div> */}
             <div className='row'>
               <span>
                 <BsFillCalendar2WeekFill />
@@ -110,18 +106,17 @@ const NotificationItem = ({ type, eventName, location, members, mentionedUser, c
               <span>
                 <BsGeoAltFill /> {location}
               </span>
-
               <span>
                 <BsFillPersonFill /> {members}
               </span>
             </div>
           </NotificationDetails>
-        )}
         <NotificationTime>{formatRelativeTime(eventTime)}</NotificationTime>
       </NotificationInner>
     </Notification>
   );
 };
+
 
 export default NotificationItem;
 

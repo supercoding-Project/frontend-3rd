@@ -1,98 +1,140 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import NotificationItem from './NotificationItem';
 import { BsCheckLg } from 'react-icons/bs';
+import io from 'socket.io-client';
+import axios from 'axios';
+import NotificationItem from './NotificationItem';
+import { fetchAlarmCount } from '../Layout/Aside/UserPanel/alarmUtils';
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'event_added',
-      calendarName: '동아리',
-      eventName: '전야제',
-      location: '슈퍼 코인노래방',
-      members: 7,
-      eventTime: '2025-03-28T15:55:50',
-      read: false,
-    },
-    {
-      id: 2,
-      type: 'event_mentioned',
-      mentionedUser: '김하진',
-      calendarName: '동아리',
-      eventName: '동아리 창립 기념일 MT',
-      location: '제부도, 아침해 뜨는 펜션',
-      members: 31,
-      eventTime: '2025-03-28T14:00:00',
-      read: false,
-    },
-    {
-      id: 3,
-      type: 'event_deleted',
-      calendarName: '회사',
-      eventName: '2025 춘계 워크샵',
-      location: '회사 1층 카페 > 부산 해운대',
-      members: 45,
-      eventTime: '2025-03-28T12:30:00',
-      read: true,
-    },
-    {
-      id: 4,
-      type: 'event_updated',
-      calendarName: '회사',
-      eventName: '점심회식',
-      date: '2025-03-10',
-      time: '11:30',
-      location: '맛있는 뼈해장국',
-      members: 8,
-      eventTime: '2025-03-27T12:00:00',
-      read: true,
-    },
-    {
-      id: 5,
-      type: 'member_added',
-      calendarName: '회사',
-      eventTime: '2025-03-27T11:00:00',
-      read: true,
-    },
-    {
-      id: 6,
-      type: 'event_started',
-      calendarName: '개인',
-      eventName: '미용실 예약',
-      date: '2025-03-03',
-      time: '14:00',
-      location: '슈퍼매직 미용실',
-      members: 5,
-      eventTime: '2025-03-26T14:00:00',
-      read: true,
-    },
-  ]);
-  const allCheckBtn = () => {
-    setNotifications((prevNotifications) =>
-      prevNotifications.map((noti) => (noti.read ? noti : { ...noti, read: true }))
-    );
+  const [notifications, setNotifications] = useState([]);
+  const socketRef = useRef(null);
+
+  const fetchUnreadNotifications = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return console.error('토큰이 없습니다. 다시 로그인하세요.');
+
+    try {
+      const { data } = await axios.get(
+        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/unread',
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (data.isSuccess && data.data) {
+        setNotifications(data.data);
+      }
+    } catch (error) {
+      console.error('❌ 알림 불러오기 실패', error);
+    }
+  };
+
+  const initSocket = (token) => {
+    const socket = io('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:9093', {
+      query: { token },
+      transports: ['websocket'],
+    });
+
+    socket.on('connect', () => console.log('✅ 알림 소켓 연결됨'));
+    socket.on('disconnect', () => console.log('🔌 알림 소켓 해제됨'));
+    socket.on('connect_error', (e) => console.error('❗ 소켓 오류:', e.message));
+
+    socket.on('sendAlarm', (data) => {
+      setNotifications((prev) => {
+        const exists = prev.some((alarm) => alarm.alarmId === data.alarmId);
+        return exists ? prev : [...prev, data];
+      });
+    });
+
+    socketRef.current = socket;
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+
+    fetchUnreadNotifications();
+    initSocket(token);
+
+    return () => {
+      socketRef.current?.disconnect();
+      console.log('🔌 알림 소켓 종료');
+    };
+  }, []);
+
+  const handleMarkAllAsRead = async () => {
+    const token = localStorage.getItem('access_token');
+    try {
+      await axios.put(
+        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/all',
+        null,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications([]);
+
+    const count = await fetchAlarmCount();
+    localStorage.setItem("alarmCount", count); // 임시 저장
+    window.dispatchEvent(new Event("alarmCountUpdated")); // 이벤트 발생시켜서 ButtonGroup도 반응하도록
+
+    } catch (error) {
+      console.error('❌ 전체 읽음 처리 실패', error);
+    }
+  };
+
+  const handleNotificationClick = async (id, alarmType) => {
+    const accessToken = localStorage.getItem("access_token");
+    try {
+      await axios.put(
+        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/${id}?alarmType=${alarmType}`,
+        {}, 
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          },
+        }
+      );
+      
+      setNotifications((prev) => prev.filter((alarm) => alarm.id !== id));
+
+      const count = await fetchAlarmCount();
+      localStorage.setItem("alarmCount", count); // 임시 저장
+      window.dispatchEvent(new Event("alarmCountUpdated")); // 이벤트 발생시켜서 ButtonGroup도 반응하도록
+
+    } catch (error) {
+      console.error('❌ 알림 읽음 처리 실패', error);
+    }
   };
 
   return (
     <NotificationsContainer>
       <NotificationsHeader>
         <h1>알림</h1>
-        <button onClick={allCheckBtn}>
+        <button onClick={handleMarkAllAsRead}>
           <BsCheckLg />
           전체 확인
         </button>
       </NotificationsHeader>
-      {notifications.map((noti) => (
-        <NotificationItem key={noti.id} {...noti} />
-      ))}
+
+      {notifications.length === 0 ? (
+        <p>📭 새로운 알림이 없습니다.</p>
+      ) : (
+        notifications.map((notification) => (
+          <NotificationItem
+          key={notification.id}  
+          alarmId={notification.id}  
+            {...notification}
+            onClick={handleNotificationClick}
+          />
+        ))
+      )}
     </NotificationsContainer>
   );
 };
 
 export default Notifications;
 
-const NotificationsContainer = styled.div``;
+const NotificationsContainer = styled.div`
+  padding: 20px;
+`;
+
 const NotificationsHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -115,8 +157,5 @@ const NotificationsHeader = styled.div`
     margin-right: 20px;
     border-radius: 5px;
     cursor: pointer;
-    svg {
-      margin-right: 3px;
-    }
   }
 `;
