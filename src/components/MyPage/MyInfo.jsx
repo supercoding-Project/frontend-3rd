@@ -69,15 +69,15 @@ const MyInfo = () => {
 
   const handlePasswordChange = async () => {
     const { currentPassword, newPassword, confirmPassword } = passwords;
-  
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       return alert('모든 비밀번호 항목을 입력해주세요.');
     }
-  
+
     if (newPassword !== confirmPassword) {
       return alert('새 비밀번호가 일치하지 않습니다.');
     }
-  
+
     try {
       const response = await axios.put(
         `${baseUrl}/api/v1/mypage/password?oldPassword=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`,
@@ -88,7 +88,7 @@ const MyInfo = () => {
           },
         }
       );
-  
+
       console.log('비밀번호 변경 성공:', response.data);
       alert('비밀번호가 성공적으로 변경되었습니다!');
     } catch (error) {
@@ -96,12 +96,10 @@ const MyInfo = () => {
       alert('비밀번호 변경에 실패했습니다.');
     }
   };
-  
 
   const handleUpdate = async () => {
     try {
       const token = localStorage.getItem('access_token');
-
 
       if (userInfo.profileImage.startsWith('data:image')) {
         const blob = await (await fetch(userInfo.profileImage)).blob();
@@ -143,22 +141,16 @@ const MyInfo = () => {
     }
   };
 
-  const baseUrl = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
-
   return (
     <Container>
       <Title>회원 정보 수정</Title>
       <ProfileSection>
         <ProfileImage
-<<<<<<< HEAD
-          src={userInfo.profileImage ? userInfo.profileImage : `${baseUrl}${userInfo.profileImage}`}
-=======
           src={
             userInfo.profileImage.startsWith('http') || userInfo.profileImage.startsWith('data')
               ? userInfo.profileImage
               : `${baseUrl}${userInfo.profileImage}`
           }
->>>>>>> 893fae350b757705946f4676876d31551f0cd3d3
           alt='profile'
         />
         <UploadButton htmlFor='profileUpload'>프로필 이미지 변경</UploadButton>
@@ -171,16 +163,10 @@ const MyInfo = () => {
         />
 
         <Label>이름</Label>
-        <Input
-          value={userInfo.name}
-          onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-        />
+        <Input value={userInfo.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
 
         <Label>핸드폰 번호</Label>
-        <Input
-          value={userInfo.phone}
-          onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })}
-        />
+        <Input value={userInfo.phone} onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
 
         <Label>이메일</Label>
         <DisabledInput value={userInfo.email} disabled />
