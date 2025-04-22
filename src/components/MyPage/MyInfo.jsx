@@ -43,15 +43,7 @@ const MyInfo = () => {
           console.error('유저 정보 응답 구조 이상');
         }
       } catch (error) {
-<<<<<<< HEAD
-        console.error('유저 정보를 불러오는 중 오류 발생:', error);
-        if (error.response) {
-          console.log('🔴 서버 응답 상태 코드:', error.response.status);
-          console.log('🔴 서버 응답 데이터:', error.response.data);
-        }
-=======
         console.error('유저 정보 불러오기 실패:', error);
->>>>>>> 893fae350b757705946f4676876d31551f0cd3d3
       }
     };
 
