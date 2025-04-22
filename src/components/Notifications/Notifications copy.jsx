@@ -1,81 +1,56 @@
 // 웹소켓 연결버전
 
+// socket.io 방식으로 구현된 알림 리스트 (React)
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import NotificationItem from './NotificationItem';
 import { BsCheckLg } from 'react-icons/bs';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import io from 'socket.io-client';
 
-// WebSocket 연결을 위한 설정
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
-  const stompClientRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
+  const socketRef = useRef(null);
 
-  // WebSocket 연결
   useEffect(() => {
-    console.log('🚀 WebSocket 연결 시도...');
+    console.log('Socket.IO 연결 중...');
     const token = localStorage.getItem('access_token');
-    console.log('토큰:', token);
+    console.log(token);
     if (!token) {
-      console.error('❌ 토큰이 없습니다. 다시 로그인하세요.');
+      console.error('유효한 토큰이 없습니다. 다시 로그인해 주세요.');
       return;
     }
 
-    const connectWebSocket = () => {
-      if (stompClientRef.current) {
-        console.log('⏳ 이미 WebSocket이 연결 중입니다. 중복 연결 방지');
-        return;
-      }
+    const socket = io('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:9093', {
+      query: { token },
+      transports: ['websocket'],
+    });
 
-      console.log('🔄 WebSocket 연결 중...');
+    socket.on('connect', () => {
+      console.log('✅ Socket.IO 연결 성공!');
+    });
 
-      const socket = new SockJS('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/alarms');
-      const stompClient = new Client({
-        webSocketFactory: () => {
-          console.log('🟢 웹소켓 팩토리 실행됨!');
-          return socket;
-        },
-        connectHeaders: {
-          Authorization: `Bearer ${token}`, // JWT 토큰 헤더에 추가
-        },
-        debug: (str) => console.log('🟡 STOMP 디버그:', str),
-        onConnect: (frame) => {
-          console.log('✅ STOMP 연결 성공!', frame);
-          console.log('🟢 웹소켓 연결 성공!'); // 연결 성공 메시지 출력 추가
-          stompClient.subscribe('/user/queue/alarms', (message) => {
-            const alarmDto = JSON.parse(message.body);
-            console.log('🔔 새 알림 수신:', alarmDto);
-            setNotifications((prevNotifications) => [...prevNotifications, alarmDto]); // 알림이 수신될 때마다 상태 업데이트
-          });
-        },
-        onStompError: (error) => {
-          console.error('❌ STOMP 오류 발생:', error);
-        },
-        onWebSocketClose: () => {
-          console.log('🚨 웹소켓 연결 끊김');
-        },
-      });
+    socket.on('disconnect', () => {
+      console.log('🔌 연결이 종료되었습니다.');
+    });
 
-      stompClient.activate();
-      stompClientRef.current = stompClient;
-    };
+    socket.on('sendAlarm', (data) => {
+      console.log('📩 새로운 알림 수신:', data);
+      setNotifications((prev) => [...prev, data]);
+    });
 
-    connectWebSocket();
+    socket.on('connect_error', (error) => {
+      console.error('❌ 연결 오류 발생:', error.message);
+    });
+
+    socketRef.current = socket;
 
     return () => {
-      if (stompClientRef.current) {
-        console.log('🛑 WebSocket 연결 해제됨');
-        stompClientRef.current.deactivate(); // 연결 해제
-        stompClientRef.current = null;
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current); // 재연결 타이머 클리어
-        reconnectTimeoutRef.current = null;
+      if (socketRef.current) {
+        console.log('🔌 소켓 연결 해제');
+        socketRef.current.disconnect();
       }
     };
-  }, []); // 처음 마운트될 때만 실행
+  }, []);
 
   return (
     <NotificationsContainer>
@@ -96,16 +71,19 @@ const Notifications = () => {
 export default Notifications;
 
 const NotificationsContainer = styled.div``;
+
 const NotificationsHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: end;
   margin-bottom: 20px;
+
   h1 {
     font-size: var(--font-xl);
     font-weight: bold;
     padding: 20px 0;
   }
+
   button {
     border: 1px solid var(--color-main-active);
     background-color: var(--color-bg-primary);
