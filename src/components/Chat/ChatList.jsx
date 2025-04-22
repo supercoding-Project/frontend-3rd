@@ -4,6 +4,7 @@ import axios from 'axios';
 import styled from 'styled-components';
 import ChatRoomModal from './ChatRoomModal';
 import { BsPersonFill } from 'react-icons/bs';
+import ChatTest from './ChatTest';
 
 const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
@@ -89,39 +90,43 @@ const ChatList = () => {
       <ChatRow>
         {rooms.length > 0 ? (
           <ul>
-            {rooms.map((room) => (
-              <li key={room.roomId}>
-                <div className='rowTop'>
-                  <div className='calendar' onClick={() => navigate(`/chat/${room.roomId}`)}>
-                    <div className='name'>{room.roomName}</div>
-                    <div className='member'>
-                      <BsPersonFill />3
+            {rooms.map((room) => {
+              console.log('room 객체:', room); // 여기!
+              return (
+                <li key={room.roomId}>
+                  <div className='rowTop'>
+                    <div className='calendar' onClick={() => navigate(`/chat/${room.roomId}`)}>
+                      <div className='name'>{room.roomName}</div>
+                      <div className='member'>
+                        <BsPersonFill />3
+                      </div>
+                    </div>
+                    <div className='messageBadge'>{room.unreadCount}</div>
+                  </div>
+                  <div className='rowBottom'>
+                    <div className='chatContents'>
+                      <div className='chatUserName'>{room.lastMessage.senderName}</div>
+                      <div className='chatMark'>:</div>
+                      <div className='chatText'>{room.lastMessage.message}</div>
+                    </div>
+                    <div className='chatTime'>
+                      {new Date(room.lastMessage.createdAt).toLocaleString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
                     </div>
                   </div>
-                  <div className='messageBadge'>{room.unreadCount}</div> {/* 안읽은 메시지 개수 */}
-                </div>
-                <div className='rowBottom'>
-                  <div className='chatContents'>
-                    <div className='chatUserName'>{room.lastMessage.senderName}</div>
-                    <div className='chatMark'>:</div>
-                    <div className='chatText'>{room.lastMessage.message}</div>
-                  </div>
-                  <div className='chatTime'>
-                    {new Date(room.lastMessage.createdAt).toLocaleString('ko-KR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true,
-                    })}
-                  </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p>채팅방 목록이 없습니다.</p>
         )}
       </ChatRow>
       {isModalOpen && <ChatRoomModal onClose={() => setIsModalOpen(false)} />}
+      <ChatTest />
     </ChatListContainer>
   );
 };

@@ -1,6 +1,3 @@
-// 웹소켓 연결버전
-
-// socket.io 방식으로 구현된 알림 리스트 (React)
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import NotificationItem from './NotificationItem';

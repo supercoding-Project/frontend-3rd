@@ -36,7 +36,18 @@ const formatRelativeTime = (notificationTime) => {
   return `${month.toString().padStart(2, '0')}월 ${day.toString().padStart(2, '0')}일`;
 };
 
-const NotificationItem = ({ alarmId, type, eventName, location, members, mentionedUser, calendarName, eventTime, read, onClick}) => {
+const NotificationItem = ({
+  alarmId,
+  type,
+  eventName,
+  location,
+  members,
+  mentionedUser,
+  calendarName,
+  eventTime,
+  read,
+  onClick,
+}) => {
   const messageMap = {
     event_added: (
       <>
@@ -92,31 +103,30 @@ const NotificationItem = ({ alarmId, type, eventName, location, members, mention
   const formattedTime = eventDate.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
 
   return (
-    <Notification $read={read} onClick={() => onClick(alarmId, type)}> 
+    <Notification $read={read} onClick={() => onClick(alarmId, type)}>
       <NotificationIcon>{iconMap[type]}</NotificationIcon>
       <NotificationInner>
         <NotificationTitle>{messageMap[type]}</NotificationTitle>
-          <NotificationDetails>
-            <div className='row'>
-              <span>
-                <BsFillCalendar2WeekFill />
-                &nbsp;
-                {formattedDate} {formattedTime}
-              </span>
-              <span>
-                <BsGeoAltFill /> {location}
-              </span>
-              <span>
-                <BsFillPersonFill /> {members}
-              </span>
-            </div>
-          </NotificationDetails>
+        <NotificationDetails>
+          <div className='row'>
+            <span>
+              <BsFillCalendar2WeekFill />
+              &nbsp;
+              {formattedDate} {formattedTime}
+            </span>
+            <span>
+              <BsGeoAltFill /> {location}
+            </span>
+            <span>
+              <BsFillPersonFill /> {members}
+            </span>
+          </div>
+        </NotificationDetails>
         <NotificationTime>{formatRelativeTime(eventTime)}</NotificationTime>
       </NotificationInner>
     </Notification>
   );
 };
-
 
 export default NotificationItem;
 
@@ -126,7 +136,7 @@ const Notification = styled.div`
   padding: 20px 10px;
   border-bottom: 1px solid var(--color-border);
   position: relative;
-  background-color: ${({ read }) => (read ? 'transparent' : '#f9f9f9')};
+  background-color: ${({ $read }) => ($read ? 'transparent' : '#f9f9f9')};
 `;
 
 const NotificationIcon = styled.div`

@@ -63,41 +63,37 @@ const Notifications = () => {
   const handleMarkAllAsRead = async () => {
     const token = localStorage.getItem('access_token');
     try {
-      await axios.put(
-        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/all',
-        null,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.put('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/all', null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setNotifications([]);
 
-    const count = await fetchAlarmCount();
-    localStorage.setItem("alarmCount", count); // 임시 저장
-    window.dispatchEvent(new Event("alarmCountUpdated")); // 이벤트 발생시켜서 ButtonGroup도 반응하도록
-
+      const count = await fetchAlarmCount();
+      localStorage.setItem('alarmCount', count); // 임시 저장
+      window.dispatchEvent(new Event('alarmCountUpdated')); // 이벤트 발생시켜서 ButtonGroup도 반응하도록
     } catch (error) {
       console.error('❌ 전체 읽음 처리 실패', error);
     }
   };
 
   const handleNotificationClick = async (id, alarmType) => {
-    const accessToken = localStorage.getItem("access_token");
+    const accessToken = localStorage.getItem('access_token');
     try {
       await axios.put(
         `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/${id}?alarmType=${alarmType}`,
-        {}, 
+        {},
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      
+
       setNotifications((prev) => prev.filter((alarm) => alarm.id !== id));
 
       const count = await fetchAlarmCount();
-      localStorage.setItem("alarmCount", count); // 임시 저장
-      window.dispatchEvent(new Event("alarmCountUpdated")); // 이벤트 발생시켜서 ButtonGroup도 반응하도록
-
+      localStorage.setItem('alarmCount', count); // 임시 저장
+      window.dispatchEvent(new Event('alarmCountUpdated')); // 이벤트 발생시켜서 ButtonGroup도 반응하도록
     } catch (error) {
       console.error('❌ 알림 읽음 처리 실패', error);
     }
@@ -112,14 +108,13 @@ const Notifications = () => {
           전체 확인
         </button>
       </NotificationsHeader>
-
       {notifications.length === 0 ? (
         <p>📭 새로운 알림이 없습니다.</p>
       ) : (
         notifications.map((notification) => (
           <NotificationItem
-          key={notification.id}  
-          alarmId={notification.id}  
+            key={notification.id}
+            alarmId={notification.id}
             {...notification}
             onClick={handleNotificationClick}
           />
@@ -140,20 +135,19 @@ const NotificationsHeader = styled.div`
   justify-content: space-between;
   align-items: end;
   margin-bottom: 20px;
+
   h1 {
     font-size: var(--font-xl);
     font-weight: bold;
     padding: 20px 0;
   }
+
   button {
-    display: flex;
-    align-items: center;
     border: 1px solid var(--color-main-active);
     background-color: var(--color-bg-primary);
     color: var(--color-main-active);
     font-weight: bold;
-    font-size: var(--font-md);
-    padding: 5px 7px;
+    padding: 3px 10px;
     margin-right: 20px;
     border-radius: 5px;
     cursor: pointer;

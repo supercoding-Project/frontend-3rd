@@ -24,7 +24,6 @@
     "react-router-dom": "^7.3.0",
     "react-toastify": "^11.0.5",
     "socket.io-client": "^2.5.0",
-    "sockjs-client": "^1.6.1",
     "styled-components": "^6.1.15"
   },
   "devDependencies": {

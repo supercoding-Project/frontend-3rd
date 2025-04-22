@@ -148,7 +148,7 @@ const CalendarList = () => {
             </CheckboxLabel>
           ))
         ) : (
-          <p>캘린더를 생성해주세요.</p>
+          <p>캘린더 데이터를 불러오는 중...</p>
         )}
       </ListContainer>
 

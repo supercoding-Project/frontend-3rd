@@ -25,9 +25,7 @@ const MyInfo = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL;
-        const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
-        const response = await axios.get(`${baseUrl}/v1/mypage`, {
+        const response = await axios.get('/api/v1/mypage', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           },
@@ -71,15 +69,15 @@ const MyInfo = () => {
 
   const handlePasswordChange = async () => {
     const { currentPassword, newPassword, confirmPassword } = passwords;
-  
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       return alert('모든 비밀번호 항목을 입력해주세요.');
     }
-  
+
     if (newPassword !== confirmPassword) {
       return alert('새 비밀번호가 일치하지 않습니다.');
     }
-  
+
     try {
       const response = await axios.put(
         `${baseUrl}/api/v1/mypage/password?oldPassword=${encodeURIComponent(currentPassword)}&newPassword=${encodeURIComponent(newPassword)}`,
@@ -90,7 +88,7 @@ const MyInfo = () => {
           },
         }
       );
-  
+
       console.log('비밀번호 변경 성공:', response.data);
       alert('비밀번호가 성공적으로 변경되었습니다!');
     } catch (error) {
@@ -98,7 +96,6 @@ const MyInfo = () => {
       alert('비밀번호 변경에 실패했습니다.');
     }
   };
-  
 
   const handleUpdate = async () => {
     try {
@@ -156,7 +153,6 @@ const MyInfo = () => {
           }
           alt='profile'
         />
-
         <UploadButton htmlFor='profileUpload'>프로필 이미지 변경</UploadButton>
         <input
           id='profileUpload'
@@ -167,16 +163,10 @@ const MyInfo = () => {
         />
 
         <Label>이름</Label>
-        <Input
-          value={userInfo.name}
-          onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-        />
+        <Input value={userInfo.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
 
         <Label>핸드폰 번호</Label>
-        <Input
-          value={userInfo.phone}
-          onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })}
-        />
+        <Input value={userInfo.phone} onChange={(e) => setUserInfo({ ...userInfo, phone: e.target.value })} />
 
         <Label>이메일</Label>
         <DisabledInput value={userInfo.email} disabled />
