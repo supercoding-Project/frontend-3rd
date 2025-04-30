@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 
 const DEFAULT_PROFILE_IMAGE = '/Basic-User-Img.png';
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
 
 const SignUpModal = ({ setOpenSignupModal }) => {
   const {
@@ -60,18 +62,13 @@ const SignUpModal = ({ setOpenSignupModal }) => {
 
   const handleDuplicateCheck = async (email) => {
     try {
-      const res = await axios.post(
-        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/check-email',
-        { email }
-      );
+      const res = await axios.post(`${baseUrl}/check-email`, { email });
 
       if (res.data.data === '사용 가능한 이메일입니다.') {
         setIsEmailChecked(true);
         setEmailError(null);
-        console.log(res.data);
         alert('✅ ' + res.data.data);
       } else {
-        console.log(res.data);
         alert('🚨' + res.data.data);
         setIsEmailChecked(false);
       }
@@ -102,7 +99,7 @@ const SignUpModal = ({ setOpenSignupModal }) => {
       formData.append('image', profileImage);
     }
     try {
-      await axios.post('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/signup', formData, {
+      await axios.post(`${baseUrl}/signup`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

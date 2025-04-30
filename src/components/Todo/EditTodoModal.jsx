@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { BsChevronDown, BsChevronRight } from 'react-icons/bs'; // 아이콘 추가
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const EditTodoModal = ({ closeModal, todo, updateTodoList, calendarId: propCalendarId }) => {
   const [todoText, setTodoText] = useState(todo.todoContent);
   const [memo, setMemo] = useState(todo.memo);
@@ -18,14 +21,14 @@ const EditTodoModal = ({ closeModal, todo, updateTodoList, calendarId: propCalen
   const [calendarList, setCalendarList] = useState([]); // 캘린더 리스트 상태 추가
   const [colorCategory, setColorCategory] = useState(''); // 색상 관리 상태 추가
 
-  const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+  // const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
   useEffect(() => {
     const fetchCalendars = async () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
       try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/calendars`, {
+        const response = await axios.get(`${baseUrl}/v1/calendars`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data && response.data.data) {
@@ -62,7 +65,7 @@ const EditTodoModal = ({ closeModal, todo, updateTodoList, calendarId: propCalen
         todoDate: date, // 일시 추가
       };
 
-      const response = await axios.put(`${SERVER_URL}/api/v1/todo/${todo.todoId}?calendarId=${calendarId}`, todoData, {
+      const response = await axios.put(`${baseUrl}/v1/todo/${todo.todoId}?calendarId=${calendarId}`, todoData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -88,7 +91,7 @@ const EditTodoModal = ({ closeModal, todo, updateTodoList, calendarId: propCalen
     const token = localStorage.getItem('access_token');
 
     try {
-      const response = await axios.delete(`${SERVER_URL}/api/v1/todo/${todo.todoId}?calendarId=${calendarId}`, {
+      const response = await axios.delete(`${baseUrl}/v1/todo/${todo.todoId}?calendarId=${calendarId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

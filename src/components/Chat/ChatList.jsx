@@ -6,7 +6,7 @@ import ChatRoomModal from './ChatRoomModal';
 import { BsPersonFill } from 'react-icons/bs';
 import ChatTest from './ChatTest';
 
-const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+//const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
 const ChatList = () => {
   const [rooms, setRooms] = useState([]);
@@ -24,23 +24,22 @@ const ChatList = () => {
       return;
     }
     try {
-      const response = await axios.get(`${SERVER_URL}/api/v1/chat/rooms`, {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+      const response = await axios.get(`${baseUrl}/v1/chat/rooms`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       // 채팅방 목록 불러오기 성공 후 안읽은 메시지 개수와 최신 메시지 추가
       const roomsWithUnreadMessages = await Promise.all(
         response.data.data.map(async (room) => {
-          const unreadResponse = await axios.get(`${SERVER_URL}/api/v1/chat/message/unread/${room.roomId}`, {
+          const unreadResponse = await axios.get(`${baseUrl}/v1/chat/message/unread/${room.roomId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
-          const lastMessageResponse = await axios.get(
-            `${SERVER_URL}/api/v1/chat/message/load/${room.roomId}?pageNumber=0`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
+          const lastMessageResponse = await axios.get(`${baseUrl}/v1/chat/message/load/${room.roomId}?pageNumber=0`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
           // 가장 최근 메시지 정보 추출
           const lastMessage =
@@ -70,7 +69,9 @@ const ChatList = () => {
     }
 
     try {
-      await axios.delete(`${SERVER_URL}/api/v1/chat/room/${roomId}`, {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+      await axios.delete(`${baseUrl}/v1/chat/room/${roomId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

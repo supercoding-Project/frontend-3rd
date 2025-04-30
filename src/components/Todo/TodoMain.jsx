@@ -5,18 +5,21 @@ import CreateTodoModal from './CreateTodoModal';
 import EditTodoModal from './EditTodoModal'; // EditTodoModal 임포트
 import { MdOutlineModeEdit } from 'react-icons/md';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const TodoMain = () => {
   const [todoList, setTodoList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 상태
   const [selectedTodo, setSelectedTodo] = useState(null); // 선택된 할 일
 
-  const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+  //const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
 
-    fetch(`${SERVER_URL}/api/v1/todo?view=MONTHLY&date=2025-03-28&calendarId=59`, {
+    fetch(`${baseUrl}/v1/todo?view=MONTHLY&date=2025-03-28&calendarId=59`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -52,6 +55,10 @@ const TodoMain = () => {
 
   const handleDeleteTodo = (todoId) => {
     setTodoList(todoList.filter((todo) => todo.todoId !== todoId));
+  };
+
+  const toggleComplete = (index) => {
+    setTodoList(todoList.map((todo, i) => (i === index ? { ...todo, completed: !todo.completed } : todo)));
   };
 
   return (

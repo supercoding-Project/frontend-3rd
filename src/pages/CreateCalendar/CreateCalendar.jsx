@@ -4,6 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCalendar } from '../../context/CalendarContext';
 import styled from 'styled-components';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const CreateCalendar = () => {
   const { calendarList, dispatch } = useCalendar();
   const [showCalendarDropDown, setShowCalendarDropDown] = useState(false);
@@ -76,26 +79,22 @@ const CreateCalendar = () => {
     console.log('보낼 데이터:', dto); // 확인용 로그
 
     try {
-      const response = await fetch(
-        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/create-calendar',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(dto),
-        }
-      );
+      const response = await fetch(`${baseUrl}/v1/create-calendar`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dto),
+      });
 
       if (response.ok) {
         const data = await response.json();
         alert('캘린더가 생성되었습니다!');
         dispatch({ type: 'SET_CALENDAR_LIST', payload: [...calendarList, data.data] });
-        navigate('/'); // 성공 시 리디렉션
+        navigate('/');
       } else {
         console.error('Error creating calendar');
-        // Error handling: 서버가 에러를 반환하면 여기서 처리
       }
     } catch (error) {
       console.error('Error:', error);
@@ -105,15 +104,12 @@ const CreateCalendar = () => {
   // 채팅방 생성 API 호출
   const createChatRoom = async (calendarId) => {
     try {
-      const response = await fetch(
-        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/room/create/${calendarId}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
+      const response = await fetch(`${baseUrl}/v1/chat/room/create/${calendarId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
 
       if (response.ok) {
         const chatRoomData = await response.json();

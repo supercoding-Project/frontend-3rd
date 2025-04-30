@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
 
-const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+//const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
 
 const ChatRoomModal = ({ onClose }) => {
   const [calendars, setCalendars] = useState([]);
@@ -12,7 +14,7 @@ const ChatRoomModal = ({ onClose }) => {
   useEffect(() => {
     const fetchCalendars = async () => {
       try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/calendars`, {
+        const response = await axios.get(`${baseUrl}/v1/calendars`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data.isSuccess) {
@@ -24,7 +26,7 @@ const ChatRoomModal = ({ onClose }) => {
     };
     const fetchChatRooms = async () => {
       try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/chat/rooms`, {
+        const response = await axios.get(`${baseUrl}/v1/chat/rooms`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data.isSuccess) {
@@ -42,7 +44,7 @@ const ChatRoomModal = ({ onClose }) => {
     try {
       if (isOwner) {
         await axios.post(
-          `${SERVER_URL}/api/v1/chat/room/create/${calendarId}`,
+          `${baseUrl}/v1/chat/room/create/${calendarId}`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -52,7 +54,7 @@ const ChatRoomModal = ({ onClose }) => {
         const inviteCode = prompt('초대 코드를 입력하세요');
         if (!inviteCode) return;
         await axios.post(
-          `${SERVER_URL}/api/v1/chat/room/join`,
+          `${baseUrl}/v1/chat/room/join`,
           { inviteCode },
           {
             headers: { Authorization: `Bearer ${token}` },

@@ -3,6 +3,9 @@ import userProfileImg from '/Basic-User-Img.png';
 import styled from 'styled-components';
 import { AuthContext } from '../../../../context/AuthContext';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const ProfileInfo = () => {
   const { user } = useContext(AuthContext);
 
@@ -10,7 +13,7 @@ const ProfileInfo = () => {
   const profileImage = user?.userImageUrl
     ? user.userImageUrl.startsWith('http')
       ? user.userImageUrl
-      : `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080${user.userImageUrl}`
+      : `${apiUrl}${user.userImageUrl}` //TEST필요요
     : userProfileImg;
 
   //로그인한 유저 정보 가져오기
@@ -19,6 +22,7 @@ const ProfileInfo = () => {
       <ProfileImage src={profileImage} alt='profile' />
       <UserInfo>
         <UserName>{user?.username || '사용자'}</UserName>
+        <UserEmail>{user?.email || '이메일 없음'}</UserEmail>
       </UserInfo>
     </ProfileContainer>
   );

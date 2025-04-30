@@ -5,7 +5,9 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
 
-const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+//const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
 
 const ScheduleEdit = () => {
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ const ScheduleEdit = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
       try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/mypage`, {
+        const response = await axios.get(`${baseUrl}/v1/mypage`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data.isSuccess) setUserId(response.data.data.id);
@@ -54,7 +56,7 @@ const ScheduleEdit = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
       try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/calendars`, {
+        const response = await axios.get(`${baseUrl}/v1/calendars`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data.isSuccess) setCalendarList(response.data.data);
@@ -120,7 +122,7 @@ const ScheduleEdit = () => {
     const calendarId = selectedCalendar.calendarId;
 
     try {
-      const response = await axios.post(`${SERVER_URL}/api/v1/schedules?calendarId=${calendarId}`, scheduleData, {
+      const response = await axios.post(`${baseUrl}/v1/schedules?calendarId=${calendarId}`, scheduleData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data.isSuccess) {
