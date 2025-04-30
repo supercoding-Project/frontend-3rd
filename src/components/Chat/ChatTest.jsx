@@ -20,7 +20,7 @@ const ChatTest = () => {
     console.log('📡 소켓 연결 시도 중...');
     console.log('🔐 전송할 토큰:', token);
 
-    socketRef.current = io('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:9092', {
+    socketRef.current = io(import.meta.env.VITE_SOCKET_URL, {
       transports: ['websocket'], // polling을 사용하지 않고 websocket만 사용
       auth: { token },
     });

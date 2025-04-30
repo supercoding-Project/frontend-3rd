@@ -6,7 +6,7 @@ const useAlarmSocket = (onAlarm) => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    const socket = io('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:9093', {
+    const socket = io(import.meta.env.VITE_SOCKET_URL2, {
       query: { token },
       transports: ['websocket'],
     });

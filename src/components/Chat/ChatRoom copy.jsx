@@ -6,7 +6,9 @@ import { Client } from '@stomp/stompjs';
 import styled from 'styled-components';
 
 const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
-const SOCKET_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:9092'; // WebSocket 서버 URL
+const SOCKET_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:9092';
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api'; // WebSocket 서버 URL
 
 const ChatRoom = () => {
   const { roomId } = useParams();
@@ -28,8 +30,7 @@ const ChatRoom = () => {
           console.error('❌ 토큰이 없습니다.');
           return;
         }
-
-        const response = await axios.get('/api/v1/mypage', {
+        const response = await axios.get(`${baseUrl}/api/v1/mypage`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -57,8 +58,7 @@ const ChatRoom = () => {
           console.error('❌ 토큰이 없습니다.');
           return;
         }
-
-        const response = await axios.get(`${SERVER_URL}/api/v1/chat/message/load/${roomId}?pageNumber=0`, {
+        const response = await axios.get(`${baseUrl}/v1/chat/message/load/${roomId}?pageNumber=0`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -116,7 +116,7 @@ const ChatRoom = () => {
       setMessage('');
 
       axios
-        .post(`${SERVER_URL}/api/v1/chat/message`, newMessage, {
+        .post(`${baseUrl}/v1/chat/message`, newMessage, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {

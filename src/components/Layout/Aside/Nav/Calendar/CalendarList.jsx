@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { useCalendar } from '../../../../../context/CalendarContext';
 import axios from 'axios';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const CalendarList = () => {
   const { selectedCalendar, calendarList, dispatch } = useCalendar(); // 🔹 chatRooms 제거
   const [chatRooms, setChatRooms] = useState([]); // 🔹 채팅방 데이터를 상태로 관리
@@ -13,7 +16,7 @@ const CalendarList = () => {
   useEffect(() => {
     // 캘린더 목록 가져오기
     axios
-      .get('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars', {
+      .get(`${baseUrl}/v1/calendars`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -28,7 +31,7 @@ const CalendarList = () => {
 
     // 채팅방 목록 가져오기
     axios
-      .get('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/rooms', {
+      .get(`${baseUrl}/v1/chat/rooms`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -82,23 +85,17 @@ const CalendarList = () => {
       if (roomIdToDelete) {
         console.log('삭제할 채팅방 ID:', roomIdToDelete);
 
-        await axios.delete(
-          `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/chat/room/${roomIdToDelete}`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-          }
-        );
+        await axios.delete(`${baseUrl}v1/chat/room/${roomIdToDelete}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+        });
 
         console.log(`채팅방 ${roomIdToDelete} 삭제 성공`);
       }
 
       // 2️⃣ 채팅방 삭제 후, 캘린더 삭제 요청
-      const calendarDeleteResponse = await axios.delete(
-        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarToDelete.id}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-        }
-      );
+      const calendarDeleteResponse = await axios.delete(`${baseUrl}/v1/calendar/${calendarToDelete.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+      });
 
       console.log('캘린더 삭제 응답:', calendarDeleteResponse);
 

@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { useCalendar } from '../../../../../context/CalendarContext';
 import axios from 'axios';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const CalendarListForMemberList = () => {
   const { selectedCalendarsForMembers, dispatch } = useCalendar();
   const [calendarList, setCalendarList] = useState([]);
@@ -12,14 +15,11 @@ const CalendarListForMemberList = () => {
     const fetchMembers = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendars',
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        );
+        const response = await axios.get(`${baseUrl}/v1/calendars`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        });
         if (response.data && response.data.data) {
           const filteredCalendars = response.data.data.filter((calendar) => calendar.calendarType === 'SHARED');
           setCalendarList(filteredCalendars); // 필터링된 캘린더 목록 업데이트

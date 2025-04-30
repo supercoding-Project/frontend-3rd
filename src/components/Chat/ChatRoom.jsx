@@ -6,6 +6,8 @@ import styled from 'styled-components';
 
 const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 const SOCKET_SERVER_URL = 'http://ec2-54-180-153-214.ap-northeast-2.compute.amazonaws.com:9092';
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
 
 const ChatRoom = () => {
   const { roomId } = useParams();
@@ -28,7 +30,7 @@ const ChatRoom = () => {
 
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/mypage`, {
+        const response = await axios.get(`${baseUrl}/v1/mypage`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data.isSuccess) {
@@ -41,7 +43,7 @@ const ChatRoom = () => {
 
     const fetchChatData = async () => {
       try {
-        const res = await axios.get(`${SERVER_URL}/api/v1/chat/message/load/${roomId}?pageNumber=0`, {
+        const res = await axios.get(`${baseUrl}/v1/chat/message/load/${roomId}?pageNumber=0`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.data.isSuccess) {
@@ -56,7 +58,7 @@ const ChatRoom = () => {
 
     const fetchRoomName = async () => {
       try {
-        const res = await axios.get(`${SERVER_URL}/api/v1/chat/room/${roomId}`, {
+        const res = await axios.get(`${baseUrl}/v1/chat/room/${roomId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.data.isSuccess) {
@@ -120,7 +122,7 @@ const ChatRoom = () => {
     setMessage('');
 
     axios
-      .post(`${SERVER_URL}/api/v1/chat/message`, newMessage, {
+      .post(`${baseUrl}/v1/chat/message`, newMessage, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {

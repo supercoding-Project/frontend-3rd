@@ -7,7 +7,9 @@ import { useCalendar } from '../../context/CalendarContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+//const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
 
 const Home = () => {
   const [selected, setSelected] = useState('month');
@@ -21,7 +23,7 @@ const Home = () => {
       const calendarId = selectedCalendar[0]; // 선택된 첫 번째 캘린더의 ID
       const fetchEvents = async () => {
         try {
-          const response = await axios.get(`${SERVER_URL}/api/v1/schedules?view=MONTHLY&calendarId=${calendarId}`, {
+          const response = await axios.get(`${baseUrl}/v1/schedules?view=MONTHLY&calendarId=${calendarId}`, {
             params: {
               calendarIds: selectedCalendar.join(','), // 여러 개의 캘린더 ID를 쉼표로 구분하여 전달
             },

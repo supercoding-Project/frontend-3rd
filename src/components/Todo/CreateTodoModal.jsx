@@ -3,8 +3,11 @@ import styled from 'styled-components';
 import { BsChevronDown, BsChevronRight } from 'react-icons/bs';
 import axios from 'axios';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const CreateTodoModal = ({ closeModal, addTodo }) => {
-  const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
+  // const SERVER_URL = 'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080';
 
   const [todoText, setTodoText] = useState('');
   const [calendarId, setCalendarId] = useState(null);
@@ -24,7 +27,7 @@ const CreateTodoModal = ({ closeModal, addTodo }) => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
       try {
-        const response = await axios.get(`${SERVER_URL}/api/v1/calendars`, {
+        const response = await axios.get(`${baseUrl}/v1/calendars`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.data && response.data.data) {
@@ -64,7 +67,7 @@ const CreateTodoModal = ({ closeModal, addTodo }) => {
     };
 
     try {
-      const response = await axios.post(`${SERVER_URL}/api/v1/todo?calendarId=${calendarId}`, todoData, {
+      const response = await axios.post(`${baseUrl}/v1/todo?calendarId=${calendarId}`, todoData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

@@ -3,6 +3,9 @@ import axios from 'axios';
 import { useCalendar } from '../../context/CalendarContext';
 import styled from 'styled-components';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const ListOfMember = () => {
   const { selectedCalendarsForMembers } = useCalendar();
   const [members, setMembers] = useState([]);
@@ -31,14 +34,11 @@ const ListOfMember = () => {
           throw new Error('유효하지 않은 캘린더 ID입니다.');
         }
 
-        const response = await axios.get(
-          `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarId}/member`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        );
+        const response = await axios.get(`${baseUrl}/v1/calendar/${calendarId}/member`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        });
         setMembers(response.data.data);
         setSharedEmails(response.data.data.map((member) => member.email)); // 이미 공유된 이메일 목록 설정
       } catch (error) {
@@ -71,7 +71,7 @@ const ListOfMember = () => {
         : selectedCalendarsForMembers;
 
       const response = await axios.post(
-        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/calendar/${calendarId}/send-invite`,
+        `${baseUrl}/v1/calendar/${calendarId}/send-invite`,
         { emailList: filteredEmails }, // 중복 이메일 제외한 리스트로 초대
         {
           headers: {

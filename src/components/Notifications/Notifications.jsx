@@ -6,6 +6,9 @@ import axios from 'axios';
 import NotificationItem from './NotificationItem';
 import { fetchAlarmCount } from '../Layout/Aside/UserPanel/alarmUtils';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const socketRef = useRef(null);
@@ -15,10 +18,9 @@ const Notifications = () => {
     if (!token) return console.error('토큰이 없습니다. 다시 로그인하세요.');
 
     try {
-      const { data } = await axios.get(
-        'http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/unread',
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const { data } = await axios.get(`${baseUrl}/v1/alarms/unread`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (data.isSuccess && data.data) {
         setNotifications(data.data);
       }
@@ -28,7 +30,7 @@ const Notifications = () => {
   };
 
   const initSocket = (token) => {
-    const socket = io('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:9093', {
+    const socket = io(import.meta.env.VITE_SOCKET_URL2, {
       query: { token },
       transports: ['websocket'],
     });
@@ -63,7 +65,7 @@ const Notifications = () => {
   const handleMarkAllAsRead = async () => {
     const token = localStorage.getItem('access_token');
     try {
-      await axios.put('http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/all', null, {
+      await axios.put(`${baseUrl}/v1/alarms/all`, null, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications([]);
@@ -80,7 +82,7 @@ const Notifications = () => {
     const accessToken = localStorage.getItem('access_token');
     try {
       await axios.put(
-        `http://ec2-52-79-228-10.ap-northeast-2.compute.amazonaws.com:8080/api/v1/alarms/${id}?alarmType=${alarmType}`,
+        `${baseUrl}/v1/alarms/${id}?alarmType=${alarmType}`,
         {},
         {
           headers: {
