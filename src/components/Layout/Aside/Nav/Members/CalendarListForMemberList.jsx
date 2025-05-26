@@ -1,81 +1,52 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { useCalendar } from '../../../../../context/CalendarContext';
-import axios from 'axios';
-
-const apiUrl = import.meta.env.VITE_API_URL;
-const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+import { FaCheck } from 'react-icons/fa';
+import { AuthContext } from '../../../../../context/AuthContext';
 
 const CalendarListForMemberList = () => {
-  const { selectedCalendarsForMembers, dispatch } = useCalendar();
-  const [calendarList, setCalendarList] = useState([]);
-  const [loading, setLoading] = useState(false); // 로딩 상태 추가
+  const { calendarList, selectedCalendarsForMembers, dispatch } = useCalendar();
+  const { isAuthenticated } = useContext(AuthContext);
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(`${baseUrl}/v1/calendars`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
-        if (response.data && response.data.data) {
-          const filteredCalendars = response.data.data.filter((calendar) => calendar.calendarType === 'SHARED');
-          setCalendarList(filteredCalendars); // 필터링된 캘린더 목록 업데이트
-        } else {
-          console.error('캘린더 데이터를 불러오지 못했습니다.');
-        }
-      } catch (error) {
-        console.error('API 요청 에러:', error.response || error.message || error); // 에러 상세 출력
-      } finally {
-        setLoading(false); // 로딩 완료
-      }
-    };
-
-    fetchMembers(); // 캘린더 목록을 불러옴
-  }, []); // selectedCalendarsForMembers가 바뀔 때마다 실행
+  // 공유 캘린더만 필터링
+  const sharedCalendars = calendarList.filter((calendar) => calendar.calendarType === 'SHARED');
 
   const handleCheckboxChange = (calendarId) => {
-    // 선택된 캘린더 목록에서 해당 캘린더를 추가하거나 제거
-    // 하나의 캘린더만 선택할 수 있도록 처리
-    if (selectedCalendarsForMembers.includes(calendarId)) {
-      // 이미 선택된 경우 선택 해제
-      dispatch({
-        type: 'SET_SELECTED_CALENDARS',
-        payload: [],
-      });
-    } else {
-      // 새로운 캘린더 선택 시 다른 캘린더는 해제하고 해당 캘린더만 선택
-      dispatch({
-        type: 'SET_SELECTED_CALENDARS',
-        payload: [calendarId],
-      });
-    }
+    const isAlreadySelected = selectedCalendarsForMembers.includes(calendarId);
+
+    dispatch({
+      type: 'SET_SELECTED_CALENDARS',
+      payload: isAlreadySelected ? [] : [calendarId],
+    });
   };
+
+  if (!isAuthenticated) {
+    return <CalendarLoading>로그인 후에 사용해주세요.</CalendarLoading>;
+  }
+
+  if (sharedCalendars.length === 0) {
+    return <CalendarLoading>공유 캘린더가 없습니다.</CalendarLoading>;
+  }
 
   return (
     <ListContainer>
-      {loading ? (
-        <p>공유 캘린더 데이터를 불러오는 중...</p> // 로딩 중 메시지
-      ) : calendarList.length > 0 ? (
-        <>
-          {calendarList.map((calendar) => (
-            <CheckboxLabel key={calendar.calendarId}>
-              <CheckboxInput
-                bgColor={calendar.calendarColor} // calendarColor로 색상 설정
-                checked={selectedCalendarsForMembers.includes(calendar.calendarId)} // selectedCalendarsForMembers에 포함된 캘린더만 체크
-                onChange={() => handleCheckboxChange(calendar.calendarId)} // 체크박스 상태 변경 시 호출
-              />
-              {calendar.calendarName}
-            </CheckboxLabel>
-          ))}
-          {/* 선택된 캘린더가 없을 때 메시지 */}
-          {/* {selectedCalendarsForMembers.length === 0 && <p>선택된 캘린더가 없습니다.</p>} */}
-        </>
-      ) : (
-        <p>공유 캘린더가 없습니다.</p> // 캘린더 목록이 없을 때 표시
-      )}
+      {sharedCalendars.map((calendar) => (
+        <CheckboxLabel key={calendar.calendarId}>
+          <CheckboxInput
+            checked={selectedCalendarsForMembers.includes(calendar.calendarId)}
+            onChange={() => handleCheckboxChange(calendar.calendarId)}
+            id={`checkbox-${calendar.calendarId}`}
+          />
+          <CheckboxStyle bgColor={calendar.calendarColor}>
+            {selectedCalendarsForMembers.includes(calendar.calendarId) && (
+              <CheckStyle>
+                <FaCheck />
+              </CheckStyle>
+            )}
+          </CheckboxStyle>
+          {calendar.calendarName}
+        </CheckboxLabel>
+      ))}
     </ListContainer>
   );
 };
@@ -95,29 +66,42 @@ const CheckboxLabel = styled.label`
   align-items: center;
   font-size: 14px;
   cursor: pointer;
-  padding: 5px;
-  position: relative;
   padding: 5px 20px 5px 40px;
 `;
 
 const CheckboxInput = styled.input.attrs(() => ({
   type: 'checkbox',
 }))`
-  appearance: none;
+  display: none;
+`;
+
+const CheckboxStyle = styled.div.withConfig({
+  shouldForwardProp: (prop) => prop !== 'bgColor',
+})`
   width: 18px;
   height: 18px;
   margin-right: 10px;
-  position: relative;
   background-color: ${(props) => props.bgColor || 'lightgray'};
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+`;
 
-  &:checked::after {
-    content: '✔';
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
+const CheckStyle = styled(FaCheck)`
+  color: white;
+  font-size: 12px;
+  position: absolute;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
+
+const CalendarLoading = styled.p`
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
 `;
