@@ -30,7 +30,7 @@ const Notifications = () => {
   };
 
   const initSocket = (token) => {
-    const socket = io(import.meta.env.VITE_SOCKET_URL2, {
+    const socket = io(import.meta.env.VITE_SOCKET_URL, {
       query: { token },
       transports: ['websocket'],
     });

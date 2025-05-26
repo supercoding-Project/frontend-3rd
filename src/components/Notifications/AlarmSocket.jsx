@@ -6,7 +6,7 @@ const useAlarmSocket = (onAlarm) => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    const socket = io(import.meta.env.VITE_SOCKET_URL2, {
+    const socket = io(import.meta.env.VITE_SOCKET_URL, {
       query: { token },
       transports: ['websocket'],
     });

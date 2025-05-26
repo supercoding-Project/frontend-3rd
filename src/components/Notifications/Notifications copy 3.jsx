@@ -19,7 +19,7 @@ const Notifications = () => {
     }
 
     // 소켓 연결
-    const socket = io(import.meta.env.VITE_SOCKET_URL2, {
+    const socket = io(import.meta.env.VITE_SOCKET_URL, {
       query: { token }, // 서버가 query로 token 받도록 설정되어 있어야 함
       transports: ['websocket'],
     });
