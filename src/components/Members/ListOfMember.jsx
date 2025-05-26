@@ -211,6 +211,8 @@ const Title = styled.h3`
 
 const InviteButton = styled.button`
   height: 30px;
+  font-size: 14px;
+  font-weight: normal;
   background-color: var(--color-main-active);
   color: white;
   padding: 5px 10px;

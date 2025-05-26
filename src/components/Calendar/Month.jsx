@@ -10,28 +10,36 @@ import {
   subMonths,
   addMonths,
 } from 'date-fns';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { useCalendar } from '../../context/CalendarContext';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
+import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import ScheduleDetailModal from '../common/ScheduleDetailModal';
+import ScheduleEditModal from '../common/ScheduleEditModal';
+import ScheduleDeleteModal from '../common/ScheduleDeleteModal';
 
 const Month = () => {
-  const { selectedCalendar, calendarList } = useCalendar();
+  const { selectedCalendar } = useCalendar();
   const [events, setEvents] = useState([]);
   const [groupedEvents, setGroupedEvents] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarColors, setCalendarColors] = useState({});
+  const [hoveredEventId, setHoveredEventId] = useState(null);
+  const [modalData, setModalData] = useState(null);
+  const [modalType, setModalType] = useState(''); // 'view' | 'edit' | 'delete'
+
   const navigate = useNavigate();
+  const { isAuthenticated } = useContext(AuthContext);
 
   const startDate = startOfWeek(startOfMonth(currentDate));
   const endDate = endOfWeek(endOfMonth(currentDate));
   const days = eachDayOfInterval({ start: startDate, end: endDate });
-
   const weeks = ['일', '월', '화', '수', '목', '금', '토'];
 
-  // 📌 캘린더 색상 가져오기
   useEffect(() => {
     const fetchCalendarColors = async () => {
       try {
@@ -59,38 +67,36 @@ const Month = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedCalendar.length > 0) {
-      let allEvents = [];
-
-      const fetchEvents = async () => {
-        try {
-          const apiUrl = import.meta.env.VITE_API_URL;
-          const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
-          const eventPromises = selectedCalendar.map((calendarId) =>
-            axios.get(`${baseUrl}/v1/schedules?view=MONTHLY&calendarId=${calendarId}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-              },
-            })
-          );
-
-          const responses = await Promise.all(eventPromises);
-          responses.forEach((response) => {
-            allEvents = [...allEvents, ...response.data.data];
-          });
-
-          setEvents(allEvents);
-          setGroupedEvents(groupEventsByDate(allEvents));
-        } catch (error) {
-          console.error('일정 가져오기 실패:', error);
-        }
-      };
-
-      fetchEvents();
+    if (selectedCalendar.length === 0) {
+      setEvents([]);
+      setGroupedEvents({});
+      return;
     }
-  }, [selectedCalendar, calendarColors]);
 
-  // 이벤트를 날짜별로 그룹화
+    const fetchEvents = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+        const eventPromises = selectedCalendar.map((calendarId) =>
+          axios.get(`${baseUrl}/v1/schedules?view=MONTHLY&calendarId=${calendarId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+          })
+        );
+
+        const responses = await Promise.all(eventPromises);
+        let allEvents = responses.flatMap((res) => res.data.data);
+
+        setEvents(allEvents);
+        setGroupedEvents(groupEventsByDate(allEvents));
+      } catch (error) {
+        console.error('일정 가져오기 실패:', error);
+      }
+    };
+
+    fetchEvents();
+  }, [selectedCalendar, calendarColors]);
 
   const groupEventsByDate = (events) => {
     const grouped = {};
@@ -100,7 +106,6 @@ const Month = () => {
         grouped[date] = [];
       }
 
-      // 📌 해당 일정의 캘린더 색상 찾아서 적용
       grouped[date].push({
         ...event,
         calendarColor: calendarColors[event.calendarId] || 'lightgray',
@@ -119,44 +124,72 @@ const Month = () => {
   };
 
   const handleScheduleEdit = (day) => {
+    if (!isAuthenticated) {
+      alert('로그인 후 이용해 주세요.');
+      return;
+    }
     navigate('/schedule-edit', { state: { selectedDate: format(day, 'yyyy-MM-dd') } });
   };
 
-  // 날짜에 해당하는 일정 표시
-  const renderDayEvents = (date) => {
-    const eventsForDay = groupedEvents[date] || [];
-    return eventsForDay.map((event, index) => (
-      <EventItem
-        key={event.scheduleId}
-        $calendarColor={event.calendarColor}
-        style={{ top: `${index * 20}px`, zIndex: eventsForDay.length - index }}
-      >
-        {event.title}
-      </EventItem>
-    ));
+  const handleOpenModal = (event, type) => {
+    setModalData(event);
+    setModalType(type);
+  };
+
+  const handleCloseModal = () => {
+    setModalData(null);
+    setModalType('');
+  };
+
+  const handleDelete = async () => {
+    if (!modalData) return;
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const baseUrl = apiUrl ? `${apiUrl}/api` : '/api';
+
+      await axios.delete(`${baseUrl}/v1/schedules/${modalData.scheduleId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+      });
+
+      setGroupedEvents((prev) => {
+        const updated = { ...prev };
+        const date = modalData.startTime.split(' ')[0];
+        updated[date] = updated[date].filter((e) => e.scheduleId !== modalData.scheduleId);
+        return updated;
+      });
+
+      handleCloseModal();
+    } catch (error) {
+      console.error('삭제 실패:', error);
+    }
   };
 
   return (
     <Container>
       <DateContainer>
-        <div>
-          <button type='button' onClick={() => handleChangeMonth('prev')}>
-            <BsChevronLeft />
-          </button>
-          <div>{format(currentDate, 'yyyy. MM.')}</div>
-          <button type='button' onClick={() => handleChangeMonth('next')}>
-            <BsChevronRight />
-          </button>
-        </div>
+        <button onClick={() => handleChangeMonth('prev')}>
+          <BsChevronLeft />
+        </button>
+        <div>{format(currentDate, 'yyyy. MM.')}</div>
+        <button onClick={() => handleChangeMonth('next')}>
+          <BsChevronRight />
+        </button>
       </DateContainer>
+
       <WeekContainer>
         {weeks.map((week) => (
           <div key={week}>{week}</div>
         ))}
       </WeekContainer>
+
       <DayContainer>
         {days.map((day) => {
           const date = format(day, 'yyyy-MM-dd');
+          const eventsForDay = groupedEvents[date] || [];
+
           return (
             <Day
               key={date}
@@ -165,22 +198,49 @@ const Month = () => {
               onClick={() => handleScheduleEdit(day)}
             >
               <span>{format(day, 'd')}</span>
-              {groupedEvents[date]?.map((event, index) => (
+              {eventsForDay.map((event, index) => (
                 <EventItem
                   key={event.scheduleId}
                   $calendarColor={event.calendarColor}
-                  style={{
-                    top: `${(index + 1) * 22}px`, // index에 따라 top 값 설정
-                    zIndex: groupedEvents[date].length - index, // z-index는 반대로 설정
-                  }}
+                  onMouseEnter={() => setHoveredEventId(event.scheduleId)}
+                  onMouseLeave={() => setHoveredEventId(null)}
+                  style={{ top: `${(index + 1) * 22}px`, zIndex: eventsForDay.length - index }}
                 >
                   {event.title}
+                  {hoveredEventId === event.scheduleId && (
+                    <HoverIcons>
+                      <FaEye
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(event, 'view');
+                        }}
+                      />
+                      <FaEdit
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(event, 'edit');
+                        }}
+                      />
+                      <FaTrash
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(event, 'delete');
+                        }}
+                      />
+                    </HoverIcons>
+                  )}
                 </EventItem>
               ))}
             </Day>
           );
         })}
       </DayContainer>
+
+      {modalType === 'view' && modalData && <ScheduleDetailModal schedule={modalData} onClose={handleCloseModal} />}
+      {modalType === 'edit' && modalData && <ScheduleEditModal schedule={modalData} onClose={handleCloseModal} />}
+      {modalType === 'delete' && modalData && (
+        <ScheduleDeleteModal schedule={modalData} onClose={handleCloseModal} onDelete={handleDelete} />
+      )}
     </Container>
   );
 };
@@ -247,7 +307,8 @@ const Day = styled.div`
   border-bottom: 1px solid var(--color-border);
   background: ${({ $isCurrentDay }) => ($isCurrentDay ? 'rgba(106, 121, 248, 0.1)' : 'transparent')};
   cursor: pointer;
-  position: relative; /* 부모의 위치 지정 */
+  position: relative;
+
   & span {
     font-size: var(--font-sm);
     padding-left: 5px;
@@ -260,10 +321,30 @@ const EventItem = styled.div`
   font-size: var(--font-sm);
   color: var(--color-text-secondary);
   background-color: ${({ $calendarColor }) => $calendarColor || 'lightgray'};
-  padding: 5px;
+  padding: 5px 30px 5px 5px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
   width: 100%;
-  /* height: 22px; */
+  height: 22px;
+`;
+
+const HoverIcons = styled.div`
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 6px;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    color: #444;
+
+    &:hover {
+      color: #000;
+    }
+  }
 `;

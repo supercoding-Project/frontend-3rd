@@ -387,7 +387,7 @@ const DateInput = styled.div`
   }
 
   & input[type='time'] {
-    width: 130px;
+    width: 140px;
   }
 `;
 
